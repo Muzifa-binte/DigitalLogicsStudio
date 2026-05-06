@@ -1,6 +1,12 @@
 // Digital Logic Design Problems - LeetCode style
 
 const problemsData = [
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 1 — Half Adder
+  // Inputs: A, B  |  Outputs: S, C
+  // S = A⊕B,  C = A·B
+  // 2^2 = 4 rows — was already complete ✓
+  // ─────────────────────────────────────────────────────────────────────────────
   {
     id: 1,
     title: "Half Adder",
@@ -19,6 +25,12 @@ const problemsData = [
     inputs: ["A", "B"],
     outputs: ["S", "C"],
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 2 — Full Adder
+  // Inputs: A, B, Cin  |  Outputs: S, Cout
+  // 2^3 = 8 rows — was already complete ✓
+  // ─────────────────────────────────────────────────────────────────────────────
   {
     id: 2,
     title: "Full Adder",
@@ -41,6 +53,15 @@ const problemsData = [
     inputs: ["A", "B", "Cin"],
     outputs: ["S", "Cout"],
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 3 — 2-to-1 Multiplexer
+  // Inputs: S, I0, I1  |  Output: Y
+  // Y = S'·I0 + S·I1
+  // BUG FIX: was only 4 rows — 2^3 = 8 rows needed.
+  // Missing rows caused expectedColumn() to return 0 for unmatched combos,
+  // making every correct circuit appear wrong.
+  // ─────────────────────────────────────────────────────────────────────────────
   {
     id: 3,
     title: "2-to-1 Multiplexer",
@@ -49,16 +70,31 @@ const problemsData = [
     description:
       "Build a 2-to-1 MUX with inputs I0, I1 and select line S. Output Y = I0 when S=0, Y = I1 when S=1.",
     truthTable: [
+      // S=0 → Y follows I0
       { S: 0, I0: 0, I1: 0, Y: 0 },
+      { S: 0, I0: 0, I1: 1, Y: 0 }, // ← was missing
       { S: 0, I0: 1, I1: 0, Y: 1 },
+      { S: 0, I0: 1, I1: 1, Y: 1 }, // ← was missing
+      // S=1 → Y follows I1
       { S: 1, I0: 0, I1: 0, Y: 0 },
       { S: 1, I0: 0, I1: 1, Y: 1 },
+      { S: 1, I0: 1, I1: 0, Y: 0 }, // ← was missing
+      { S: 1, I0: 1, I1: 1, Y: 1 }, // ← was missing
     ],
     equations: ["Y = S'·I0 + S·I1"],
     hint: "Use two AND gates, one NOT gate, and one OR gate.",
     inputs: ["S", "I0", "I1"],
     outputs: ["Y"],
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 4 — 4-to-1 Multiplexer
+  // Inputs: S1, S0, I0, I1, I2, I3  |  Output: Y
+  // Y = S1'S0'·I0 + S1'S0·I1 + S1S0'·I2 + S1S0·I3
+  // BUG FIX: truth table had symbolic strings "I0","I1","I2","I3" as Y values.
+  // Number("I0") = NaN so every expected value was 0, rejecting all circuits.
+  // Fixed: full explicit 2^6 = 64 row truth table with concrete 0/1 values.
+  // ─────────────────────────────────────────────────────────────────────────────
   {
     id: 4,
     title: "4-to-1 Multiplexer",
@@ -67,16 +103,87 @@ const problemsData = [
     description:
       "Design a 4-to-1 MUX with 4 data inputs (I0–I3), 2 select lines (S1, S0), and one output Y.",
     truthTable: [
-      { S1: 0, S0: 0, Y: "I0" },
-      { S1: 0, S0: 1, Y: "I1" },
-      { S1: 1, S0: 0, Y: "I2" },
-      { S1: 1, S0: 1, Y: "I3" },
+      // S1=0, S0=0 → Y = I0
+      { S1: 0, S0: 0, I0: 0, I1: 0, I2: 0, I3: 0, Y: 0 },
+      { S1: 0, S0: 0, I0: 0, I1: 0, I2: 0, I3: 1, Y: 0 },
+      { S1: 0, S0: 0, I0: 0, I1: 0, I2: 1, I3: 0, Y: 0 },
+      { S1: 0, S0: 0, I0: 0, I1: 0, I2: 1, I3: 1, Y: 0 },
+      { S1: 0, S0: 0, I0: 0, I1: 1, I2: 0, I3: 0, Y: 0 },
+      { S1: 0, S0: 0, I0: 0, I1: 1, I2: 0, I3: 1, Y: 0 },
+      { S1: 0, S0: 0, I0: 0, I1: 1, I2: 1, I3: 0, Y: 0 },
+      { S1: 0, S0: 0, I0: 0, I1: 1, I2: 1, I3: 1, Y: 0 },
+      { S1: 0, S0: 0, I0: 1, I1: 0, I2: 0, I3: 0, Y: 1 },
+      { S1: 0, S0: 0, I0: 1, I1: 0, I2: 0, I3: 1, Y: 1 },
+      { S1: 0, S0: 0, I0: 1, I1: 0, I2: 1, I3: 0, Y: 1 },
+      { S1: 0, S0: 0, I0: 1, I1: 0, I2: 1, I3: 1, Y: 1 },
+      { S1: 0, S0: 0, I0: 1, I1: 1, I2: 0, I3: 0, Y: 1 },
+      { S1: 0, S0: 0, I0: 1, I1: 1, I2: 0, I3: 1, Y: 1 },
+      { S1: 0, S0: 0, I0: 1, I1: 1, I2: 1, I3: 0, Y: 1 },
+      { S1: 0, S0: 0, I0: 1, I1: 1, I2: 1, I3: 1, Y: 1 },
+      // S1=0, S0=1 → Y = I1
+      { S1: 0, S0: 1, I0: 0, I1: 0, I2: 0, I3: 0, Y: 0 },
+      { S1: 0, S0: 1, I0: 0, I1: 0, I2: 0, I3: 1, Y: 0 },
+      { S1: 0, S0: 1, I0: 0, I1: 0, I2: 1, I3: 0, Y: 0 },
+      { S1: 0, S0: 1, I0: 0, I1: 0, I2: 1, I3: 1, Y: 0 },
+      { S1: 0, S0: 1, I0: 0, I1: 1, I2: 0, I3: 0, Y: 1 },
+      { S1: 0, S0: 1, I0: 0, I1: 1, I2: 0, I3: 1, Y: 1 },
+      { S1: 0, S0: 1, I0: 0, I1: 1, I2: 1, I3: 0, Y: 1 },
+      { S1: 0, S0: 1, I0: 0, I1: 1, I2: 1, I3: 1, Y: 1 },
+      { S1: 0, S0: 1, I0: 1, I1: 0, I2: 0, I3: 0, Y: 0 },
+      { S1: 0, S0: 1, I0: 1, I1: 0, I2: 0, I3: 1, Y: 0 },
+      { S1: 0, S0: 1, I0: 1, I1: 0, I2: 1, I3: 0, Y: 0 },
+      { S1: 0, S0: 1, I0: 1, I1: 0, I2: 1, I3: 1, Y: 0 },
+      { S1: 0, S0: 1, I0: 1, I1: 1, I2: 0, I3: 0, Y: 1 },
+      { S1: 0, S0: 1, I0: 1, I1: 1, I2: 0, I3: 1, Y: 1 },
+      { S1: 0, S0: 1, I0: 1, I1: 1, I2: 1, I3: 0, Y: 1 },
+      { S1: 0, S0: 1, I0: 1, I1: 1, I2: 1, I3: 1, Y: 1 },
+      // S1=1, S0=0 → Y = I2
+      { S1: 1, S0: 0, I0: 0, I1: 0, I2: 0, I3: 0, Y: 0 },
+      { S1: 1, S0: 0, I0: 0, I1: 0, I2: 0, I3: 1, Y: 0 },
+      { S1: 1, S0: 0, I0: 0, I1: 0, I2: 1, I3: 0, Y: 1 },
+      { S1: 1, S0: 0, I0: 0, I1: 0, I2: 1, I3: 1, Y: 1 },
+      { S1: 1, S0: 0, I0: 0, I1: 1, I2: 0, I3: 0, Y: 0 },
+      { S1: 1, S0: 0, I0: 0, I1: 1, I2: 0, I3: 1, Y: 0 },
+      { S1: 1, S0: 0, I0: 0, I1: 1, I2: 1, I3: 0, Y: 1 },
+      { S1: 1, S0: 0, I0: 0, I1: 1, I2: 1, I3: 1, Y: 1 },
+      { S1: 1, S0: 0, I0: 1, I1: 0, I2: 0, I3: 0, Y: 0 },
+      { S1: 1, S0: 0, I0: 1, I1: 0, I2: 0, I3: 1, Y: 0 },
+      { S1: 1, S0: 0, I0: 1, I1: 0, I2: 1, I3: 0, Y: 1 },
+      { S1: 1, S0: 0, I0: 1, I1: 0, I2: 1, I3: 1, Y: 1 },
+      { S1: 1, S0: 0, I0: 1, I1: 1, I2: 0, I3: 0, Y: 0 },
+      { S1: 1, S0: 0, I0: 1, I1: 1, I2: 0, I3: 1, Y: 0 },
+      { S1: 1, S0: 0, I0: 1, I1: 1, I2: 1, I3: 0, Y: 1 },
+      { S1: 1, S0: 0, I0: 1, I1: 1, I2: 1, I3: 1, Y: 1 },
+      // S1=1, S0=1 → Y = I3
+      { S1: 1, S0: 1, I0: 0, I1: 0, I2: 0, I3: 0, Y: 0 },
+      { S1: 1, S0: 1, I0: 0, I1: 0, I2: 0, I3: 1, Y: 1 },
+      { S1: 1, S0: 1, I0: 0, I1: 0, I2: 1, I3: 0, Y: 0 },
+      { S1: 1, S0: 1, I0: 0, I1: 0, I2: 1, I3: 1, Y: 1 },
+      { S1: 1, S0: 1, I0: 0, I1: 1, I2: 0, I3: 0, Y: 0 },
+      { S1: 1, S0: 1, I0: 0, I1: 1, I2: 0, I3: 1, Y: 1 },
+      { S1: 1, S0: 1, I0: 0, I1: 1, I2: 1, I3: 0, Y: 0 },
+      { S1: 1, S0: 1, I0: 0, I1: 1, I2: 1, I3: 1, Y: 1 },
+      { S1: 1, S0: 1, I0: 1, I1: 0, I2: 0, I3: 0, Y: 0 },
+      { S1: 1, S0: 1, I0: 1, I1: 0, I2: 0, I3: 1, Y: 1 },
+      { S1: 1, S0: 1, I0: 1, I1: 0, I2: 1, I3: 0, Y: 0 },
+      { S1: 1, S0: 1, I0: 1, I1: 0, I2: 1, I3: 1, Y: 1 },
+      { S1: 1, S0: 1, I0: 1, I1: 1, I2: 0, I3: 0, Y: 0 },
+      { S1: 1, S0: 1, I0: 1, I1: 1, I2: 0, I3: 1, Y: 1 },
+      { S1: 1, S0: 1, I0: 1, I1: 1, I2: 1, I3: 0, Y: 0 },
+      { S1: 1, S0: 1, I0: 1, I1: 1, I2: 1, I3: 1, Y: 1 },
     ],
     equations: ["Y = S1'S0'·I0 + S1'S0·I1 + S1S0'·I2 + S1S0·I3"],
     hint: "Use four AND gates (3-input each), one OR gate (4-input), and NOT gates for S1 and S0.",
     inputs: ["S1", "S0", "I0", "I1", "I2", "I3"],
     outputs: ["Y"],
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 5 — 1-to-2 Demultiplexer
+  // Inputs: D, S  |  Outputs: Y0, Y1
+  // Y0 = D·S',  Y1 = D·S
+  // 2^2 = 4 rows — was already complete ✓
+  // ─────────────────────────────────────────────────────────────────────────────
   {
     id: 5,
     title: "1-to-2 Demultiplexer",
@@ -85,16 +192,27 @@ const problemsData = [
     description:
       "Build a 1-to-2 DEMUX. Route a single input D to one of two outputs (Y0, Y1) based on select S.",
     truthTable: [
-      { S: 0, D: 0, Y0: 0, Y1: 0 },
-      { S: 0, D: 1, Y0: 1, Y1: 0 },
-      { S: 1, D: 0, Y0: 0, Y1: 0 },
-      { S: 1, D: 1, Y0: 0, Y1: 1 },
+      { D: 0, S: 0, Y0: 0, Y1: 0 },
+      { D: 0, S: 1, Y0: 0, Y1: 0 },
+      { D: 1, S: 0, Y0: 1, Y1: 0 },
+      { D: 1, S: 1, Y0: 0, Y1: 1 },
     ],
     equations: ["Y0 = D·S'", "Y1 = D·S"],
     hint: "Two AND gates with NOT gate on S for Y0.",
     inputs: ["D", "S"],
     outputs: ["Y0", "Y1"],
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 6 — 2-to-4 Decoder
+  // Inputs: E, A1, A0  |  Outputs: D0, D1, D2, D3
+  // BUG FIX 1: had one wildcard row { E:0, A1:"X", A0:"X" } which only matched
+  //            ONE combination — the other 3 E=0 combos returned 0 by accident
+  //            (coincidentally correct), but it made expectedColumn() fragile.
+  //            Expanded to 4 explicit E=0 rows.
+  // BUG FIX 2: last row had D2:1 AND D3:1 — should be D2:0, D3:1 (E=1,A1=1,A0=1
+  //            selects only D3).
+  // ─────────────────────────────────────────────────────────────────────────────
   {
     id: 6,
     title: "2-to-4 Decoder",
@@ -103,11 +221,16 @@ const problemsData = [
     description:
       "Design a 2-to-4 decoder with inputs A1, A0 and an active-high enable E. Outputs D0–D3.",
     truthTable: [
-      { E: 0, A1: "X", A0: "X", D0: 0, D1: 0, D2: 0, D3: 0 },
+      // E=0 → all outputs disabled regardless of address
+      { E: 0, A1: 0, A0: 0, D0: 0, D1: 0, D2: 0, D3: 0 },
+      { E: 0, A1: 0, A0: 1, D0: 0, D1: 0, D2: 0, D3: 0 },
+      { E: 0, A1: 1, A0: 0, D0: 0, D1: 0, D2: 0, D3: 0 },
+      { E: 0, A1: 1, A0: 1, D0: 0, D1: 0, D2: 0, D3: 0 },
+      // E=1 → active-high decode
       { E: 1, A1: 0, A0: 0, D0: 1, D1: 0, D2: 0, D3: 0 },
       { E: 1, A1: 0, A0: 1, D0: 0, D1: 1, D2: 0, D3: 0 },
       { E: 1, A1: 1, A0: 0, D0: 0, D1: 0, D2: 1, D3: 0 },
-      { E: 1, A1: 1, A0: 1, D0: 0, D1: 0, D2: 1, D3: 1 },
+      { E: 1, A1: 1, A0: 1, D0: 0, D1: 0, D2: 0, D3: 1 }, // ← was D2:1,D3:1 (wrong)
     ],
     equations: [
       "D0 = E·A1'·A0'",
@@ -119,24 +242,56 @@ const problemsData = [
     inputs: ["E", "A1", "A0"],
     outputs: ["D0", "D1", "D2", "D3"],
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 7 — SR Latch (NOR-based)
+  // Inputs: S, R  |  Outputs: Q, Q'
+  // BUG FIX: had symbolic strings "Q_prev"/"Q'_prev" and "?"/"?" as output values.
+  // Number("Q_prev") = NaN → expected column was always 0 → every circuit wrong.
+  // An SR latch is fundamentally sequential (feedback-dependent) so it can't be
+  // validated purely by combinational simulation.
+  // Fix: validate only the 2 deterministic states (Set and Reset).
+  // The hold (S=0,R=0) and forbidden (S=1,R=1) states are excluded from scoring.
+  // Achieved by marking indeterminate outputs as -1 (skipped in validation).
+  // Since the validator uses 0/1 comparison, we represent "don't validate this row"
+  // by duplicating both deterministic outcomes for those input combos so the
+  // validator can still pass circuits that implement the deterministic cases.
+  //
+  // Practical approach: drop the latch from auto-validation entirely and mark it
+  // as "manual check" by setting a validationMode flag. But to keep backward
+  // compatibility with the existing validator, we expand to only the 2 rows the
+  // validator CAN check and remove the ambiguous rows.
+  // ─────────────────────────────────────────────────────────────────────────────
   {
     id: 7,
     title: "SR Latch (NOR-based)",
     difficulty: "Medium",
     tags: ["Sequential", "Latch"],
     description:
-      "Build a basic SR Latch using two cross-coupled NOR gates. S=Set, R=Reset, Q and Q' are outputs.",
+      "Build a basic SR Latch using two cross-coupled NOR gates. S=Set, R=Reset, Q and Q' are outputs. Note: S=R=0 holds previous state; S=R=1 is forbidden.",
+    // Only include the two deterministic, simulatable rows.
+    // Hold (0,0) and forbidden (1,1) require feedback memory the static
+    // simulator cannot model, so they are intentionally omitted.
     truthTable: [
-      { S: 0, R: 0, Q: "Q_prev", "Q'": "Q'_prev" },
-      { S: 0, R: 1, Q: 0, "Q'": 1 },
-      { S: 1, R: 0, Q: 1, "Q'": 0 },
-      { S: 1, R: 1, Q: "?", "Q'": "?" },
+      { S: 0, R: 1, Q: 0, "Q'": 1 }, // Reset
+      { S: 1, R: 0, Q: 1, "Q'": 0 }, // Set
     ],
     equations: ["Q = (R + Q')'", "Q' = (S + Q)'"],
-    hint: "Two NOR gates cross-coupled: output of each feeds back into the other's input.",
+    hint: "Two NOR gates cross-coupled: output of each feeds back into the other's input. Only the Set and Reset states are auto-validated.",
     inputs: ["S", "R"],
     outputs: ["Q", "Q'"],
+    // Flag so the UI can show an explanatory note about the hold/forbidden states
+    hasIndeterminateRows: true,
+    indeterminateNote:
+      "S=R=0 (hold) and S=R=1 (forbidden) require sequential feedback and are not auto-validated.",
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 8 — Odd Parity Generator (3-bit)
+  // Inputs: A, B, C  |  Output: P
+  // P = (A ⊕ B ⊕ C)'
+  // 2^3 = 8 rows — was already complete ✓
+  // ─────────────────────────────────────────────────────────────────────────────
   {
     id: 8,
     title: "Odd Parity Generator (3-bit)",

@@ -53,10 +53,12 @@ function buildEvaluator(gates, wires, inputMap) {
       return v;
     }
 
+    // Collect all wires arriving at this gate, ordered by toIndex
     const inputs = [];
     for (const w of wires) {
       if (w.toId === id) inputs[w.toIndex] = evalId(w.fromId, depth + 1);
     }
+    // Connected inputs only (filter out sparse-array holes)
     const ci = inputs.filter((v) => v !== undefined);
 
     let result = false;
@@ -68,7 +70,10 @@ function buildEvaluator(gates, wires, inputMap) {
         result = ci.some(Boolean);
         break;
       case "NOT":
-        result = !inputs[0];
+        // BUG FIX: inputs[0] can be undefined when the NOT gate has no wire
+        // connected yet. `!undefined` evaluates to `true`, producing a phantom
+        // HIGH signal. Guard explicitly so an unconnected NOT outputs false.
+        result = inputs[0] !== undefined ? !inputs[0] : false;
         break;
       case "NAND":
         result = !(ci.length > 0 && ci.every(Boolean));
@@ -77,10 +82,14 @@ function buildEvaluator(gates, wires, inputMap) {
         result = !ci.some(Boolean);
         break;
       case "XOR":
-        result = inputs.length >= 2 && inputs[0] !== inputs[1];
+        // BUG FIX: original checked `inputs.length >= 2` which fails when
+        // inputs is a sparse array (e.g. [undefined, true]). Use ci instead,
+        // and reduce for robustness with future multi-input XOR support.
+        result = ci.length >= 2 && ci.reduce((acc, v) => acc !== v, false);
         break;
       case "XNOR":
-        result = inputs.length >= 2 && inputs[0] === inputs[1];
+        // BUG FIX: same sparse-array issue as XOR above.
+        result = ci.length >= 2 && !ci.reduce((acc, v) => acc !== v, false);
         break;
       case "BUFFER":
       case "OUTPUT":
@@ -113,24 +122,87 @@ function computeColumn(
 }
 
 // ── Expected column for a problem output given var ordering ───────
+//
+// BUG FIX (original): used Array.find() which returns the FIRST row whose
+// input columns all match (treating "X"/undefined as wildcards). This had
+// two failure modes:
+//
+//   1. INCOMPLETE TABLE — When a truth table only contained a subset of input
+//      combinations (e.g. the 2-to-1 MUX had 4 rows instead of 8), the missing
+//      combinations fell through and returned 0, giving wrong expected values.
+//
+//   2. WILDCARD SHADOWING — A wildcard row (e.g. { E:0, A1:"X", A0:"X" }) was
+//      found first by find() even when a more-specific exact row existed later
+//      in the array, returning the wildcard row's output instead of the correct
+//      specific one.
+//
+//   3. SYMBOLIC OUTPUTS — Some rows used string values like "Q_prev" or "?" for
+//      outputs. Number("Q_prev") = NaN which compared as 0, making those rows
+//      always appear wrong. This is now guarded: NaN/symbolic outputs are treated
+//      as "skip this row" (return -1 so the validator can exclude the row).
+//
+// Fix: iterate all rows and pick the MOST SPECIFIC match (highest count of
+// exact-match columns vs wildcard columns). Exact beats wildcard. Ties broken
+// by first occurrence. Symbolic/NaN output rows return -1 (skipped in scoring).
+//
 function expectedColumn(outputName, inputNames, combinations, truthTable) {
   return combinations.map((bits) => {
     const lookup = {};
     inputNames.forEach((name, j) => {
       lookup[name] = bits[j];
     });
-    const row = truthTable.find((r) =>
-      inputNames.every((name) => {
+
+    let bestRow = null;
+    let bestSpecificity = -1;
+
+    for (const r of truthTable) {
+      let matches = true;
+      let specificity = 0;
+
+      for (const name of inputNames) {
         const v = r[name];
-        return v === "X" || v === undefined || Number(v) === lookup[name];
-      }),
-    );
-    return row ? Number(row[outputName]) : 0;
+        if (v === "X" || v === undefined) {
+          // Wildcard — counts as a match but lowers specificity
+          specificity += 0;
+        } else if (Number(v) === lookup[name]) {
+          // Exact match — higher specificity
+          specificity += 1;
+        } else {
+          // Mismatch — this row does not apply
+          matches = false;
+          break;
+        }
+      }
+
+      if (matches && specificity > bestSpecificity) {
+        bestSpecificity = specificity;
+        bestRow = r;
+      }
+    }
+
+    if (!bestRow) return -1; // No matching row → skip this combination in scoring
+
+    const out = bestRow[outputName];
+
+    // Guard against symbolic outputs like "Q_prev", "?", "I0", etc.
+    // These cannot be numerically compared, so skip the row.
+    if (out === undefined || out === null) return -1;
+    const numeric = Number(out);
+    if (isNaN(numeric)) return -1;
+
+    return numeric;
   });
 }
 
 const colEqual = (a, b) =>
-  a.length === b.length && a.every((v, i) => v === b[i]);
+  a.length === b.length &&
+  a.every((v, i) => {
+    // BUG FIX: skip rows where expected = -1 (indeterminate/symbolic).
+    // Original code compared every row strictly, so symbolic expected values
+    // (NaN→0) always failed to match the circuit's actual 0 or 1 output.
+    if (v === -1 || b[i] === -1) return true;
+    return v === b[i];
+  });
 
 // ── All permutations ──────────────────────────────────────────────
 function permutations(arr) {
@@ -169,7 +241,7 @@ function validateCircuit(gates, wires, problem) {
 
   const combinations = allCombinations(nExpIn);
 
-  // Pre-compute expected columns
+  // Pre-compute expected columns (may contain -1 for indeterminate rows)
   const expCols = {};
   for (const outName of problem.outputs) {
     expCols[outName] = expectedColumn(
@@ -206,12 +278,16 @@ function validateCircuit(gates, wires, problem) {
         const expCol = expCols[problem.outputs[j]];
         const match = colEqual(col, expCol);
         if (match) {
-          score += combinations.length;
+          // Count only determinate rows for the score
+          score += expCol.filter((v) => v !== -1).length;
           outMapping[problem.outputs[j]] =
             gate.label || gate.name || `OUT${outPerm[j]}`;
         } else {
           allMatch = false;
-          score += col.filter((v, i) => v === expCol[i]).length;
+          // Partial score: count matching determinate rows
+          score += col.filter(
+            (v, i) => expCol[i] !== -1 && v === expCol[i],
+          ).length;
         }
       }
 
@@ -228,9 +304,15 @@ function validateCircuit(gates, wires, problem) {
           for (let j = 0; j < nExpOut; j++) {
             const got = outGateCols[outPerm[j]].col[ri];
             const exp = expCols[problem.outputs[j]][ri];
-            const match = got === exp;
+            // -1 means indeterminate → treat as passing (skip)
+            const match = exp === -1 || got === exp;
             if (!match) rowPassed = false;
-            rowResults[problem.outputs[j]] = { expected: exp, got, match };
+            rowResults[problem.outputs[j]] = {
+              expected: exp === -1 ? "?" : exp,
+              got,
+              match,
+              indeterminate: exp === -1,
+            };
           }
           return { inputs, outputs: rowResults, rowPassed };
         });
@@ -434,6 +516,13 @@ const CircuitModal = ({ open, onClose, problem, expression, variables }) => {
               </div>
             )}
 
+            {/* Indeterminate rows note (e.g. SR Latch) */}
+            {problem?.hasIndeterminateRows && (
+              <div className="cm-status-hint cm-indet-note">
+                ℹ️ {problem.indeterminateNote}
+              </div>
+            )}
+
             {/* Truth-table diff */}
             {(status === "passed" || status === "failed") &&
               validationResult?.rows?.length > 0 && (
@@ -467,16 +556,28 @@ const CircuitModal = ({ open, onClose, problem, expression, variables }) => {
                             return (
                               <React.Fragment key={out}>
                                 <td className="cm-td-exp">
-                                  {r?.expected ?? "?"}
+                                  {r?.indeterminate
+                                    ? "?"
+                                    : (r?.expected ?? "?")}
                                 </td>
                                 <td
                                   className={
-                                    r?.match ? "cm-td-ok" : "cm-td-err"
+                                    r?.indeterminate
+                                      ? "cm-td-indet"
+                                      : r?.match
+                                        ? "cm-td-ok"
+                                        : "cm-td-err"
                                   }
                                 >
                                   {r?.got ?? "?"}
                                 </td>
-                                <td>{r?.match ? "✓" : "✗"}</td>
+                                <td>
+                                  {r?.indeterminate
+                                    ? "~"
+                                    : r?.match
+                                      ? "✓"
+                                      : "✗"}
+                                </td>
                               </React.Fragment>
                             );
                           })}
@@ -489,8 +590,8 @@ const CircuitModal = ({ open, onClose, problem, expression, variables }) => {
 
             {status === "passed" && (
               <p className="cm-congrats">
-                All {validationResult.rows.length} test cases passed — your
-                logic is correct! 🏆
+                All {validationResult.rows.filter((r) => r.rowPassed).length}{" "}
+                test cases passed — your logic is correct! 🏆
               </p>
             )}
           </div>
@@ -610,6 +711,7 @@ const CircuitModal = ({ open, onClose, problem, expression, variables }) => {
                 .cm-mapping-exp   { color: #00ff88; }
                 .cm-status-detail { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.82rem; opacity: 0.9; }
                 .cm-status-hint   { font-style: italic; opacity: 0.7; }
+                .cm-indet-note    { font-size: 0.78rem; color: #fbbf24; opacity: 0.9; font-style: normal; }
                 .cm-congrats      { margin: 0; font-size: 0.82rem; opacity: 0.85; }
 
                 .cm-val-table-wrap { overflow-x: auto; }
@@ -623,9 +725,10 @@ const CircuitModal = ({ open, onClose, problem, expression, variables }) => {
                 .cm-val-table th { opacity: 0.7; font-weight: 700; }
                 .cm-th-exp { opacity: 0.75; }
                 .cm-th-got { opacity: 0.9; }
-                .cm-td-ok  { color: #00ff88; }
-                .cm-td-err { color: #ff3366; font-weight: 700; }
-                .cm-td-exp { opacity: 0.55; }
+                .cm-td-ok    { color: #00ff88; }
+                .cm-td-err   { color: #ff3366; font-weight: 700; }
+                .cm-td-exp   { opacity: 0.55; }
+                .cm-td-indet { color: #6b7280; font-style: italic; }
                 .cm-row-fail { background: rgba(255,51,102,0.06); }
 
                 .cm-port-strip {

@@ -1,152 +1,92 @@
-# Boolforge -- Logic Gate Simulator (React)
+# Boolforge Frontend
 
-A professional logic gate simulator built with **React**, featuring
-drag-and-drop gates, wire connections, real-time evaluation, truth table
-generation, and circuit save/load.
+Boolforge is the React frontend for Digital Logics Studio. It provides interactive digital-logic learning tools, topic pages, and the JWT-based authentication UI used by the connected backend.
 
-------------------------------------------------------------------------
+## Features
 
-## ✨ Features
+- Interactive digital-logic tools such as Circuit Forge and K-Map Studio
+- Topic-based learning pages for Boolean algebra, number systems, arithmetic, memory, and sequential circuits
+- JWT authentication flow with login, signup, logout, persistent session restore, and navbar-based user state
+- Responsive landing page with search, filtered content sections, and success alerts after authentication
 
--   🎨 **Interactive Canvas** -- Drag and drop logic gates on a
-    grid-based canvas\
--   🔌 **Wire Connections** -- Connect gates by clicking output → input
-    points\
--   🗑️ **Click to Delete Wires** -- Remove any wire with a single click\
--   ↶ **Undo / Redo** -- Full history system (up to 50 states)\
--   ⌨️ **Keyboard Shortcuts** -- Fast editing with familiar hotkeys\
--   📊 **Truth Table Generator** -- Automatically generate circuit truth
-    tables\
--   💾 **Save / Load Circuits** -- Export and import designs as JSON\
--   ⚡ **Live Evaluation** -- Real-time logic updates with visual
-    feedback\
--   🎯 **10 Logic Gate Types** -- INPUT, OUTPUT, AND, OR, NOT, NAND,
-    NOR, XOR, XNOR, BUFFER\
--   🎮 **Smooth Interactions** -- Snap-to-grid, animations, glowing
-    active wires
+## Tech Stack
 
-------------------------------------------------------------------------
+- React 18
+- React Router DOM
+- Axios
+- CSS
+- Create React App
 
-## ⌨️ Keyboard Shortcuts
+## Project Structure
+
+```text
+DigitalLogicsStudio/
+├── public/
+├── src/
+│   ├── components/
+│   ├── context/
+│   ├── pages/
+│   ├── services/
+│   ├── utils/
+│   ├── App.js
+│   └── index.js
+├── .env.example
+├── .gitignore
+├── package.json
+└── README.md
 ```
 
-  Shortcut                     Action
-  ---------------------------- -----------------------------
-  Ctrl+Z / Cmd+Z               Undo last action
-  Ctrl+Shift+Z / Cmd+Shift+Z   Redo action
-  Ctrl+Y / Cmd+Y               Redo action (alternative)
-  Delete / Backspace           Delete selected gate
-  Escape                       Cancel wire connection mode
+## Environment
 
+Create a local `.env` file from `.env.example`.
+
+```env
+REACT_APP_API_URL=http://localhost:5000/api
 ```
-## 🚀 Setup
 
-### Option 1: Quick Start (No Build Tools)
+## Local Development
 
-1.  Open `index-react.html` directly in your browser\
-2.  Uses React via CDN and Babel standalone for JSX\
-3.  Ideal for quick testing
+Install dependencies:
 
-### Option 2: Modern Development Setup (Recommended)
-
-``` bash
+```bash
 npm install
-npm run dev
-npm run build
-npm run preview
 ```
 
-------------------------------------------------------------------------
+Start the frontend:
 
-## 🧠 Usage Guide
+```bash
+npm start
+```
 
-1.  **Add Gates** -- Use sidebar buttons\
-2.  **Move Gates** -- Drag them around the canvas\
-3.  **Connect Wires** -- Output → Input\
-4.  **Delete Wires** -- Click directly on a wire\
-5.  **Toggle Inputs** -- Use input switches\
-6.  **View Outputs** -- Check truth table panel\
-7.  **Delete Gates** -- Right-click a gate\
-8.  **Generate Truth Table** -- Click "Update Table"\
-9.  **Save Circuit** -- Export as JSON\
-10. **Load Circuit** -- Import a saved design
+Build for production:
 
-------------------------------------------------------------------------
+```bash
+npm run build
+```
 
-## 🏗️ Project Structure
+## Backend Dependency
 
-    Boolforge/
-    ├── public/
-    ├── src/
-    ├── .gitignore
-    ├── LICENSE
-    ├── README.md
-    ├── package-lock.json
-    └── package.json
+This frontend expects the backend to run separately from the sibling project:
 
+```text
+../DigitalLogicsStudio-Backend
+```
 
-------------------------------------------------------------------------
+Authentication and session restore will fail if the backend is not running on the API URL configured above.
 
-## ⚙️ Technologies
+## Authentication Flow
 
--   React 18\
--   HTML5 Canvas\
--   CSS Grid & Flexbox\
--   JavaScript ES6+\
--   Vite
+- Users can sign up and log in from the navbar
+- After successful authentication, the app returns to the home page
+- A small success alert appears on the home page
+- The logged-in user name is shown in the navbar
+- Logout clears the session and returns the user to the home page
 
-------------------------------------------------------------------------
+## Notes
 
-## 📝 Changelog
+- `.env` files are ignored; `.env.example` stays tracked
+- `package-lock.json` is intentionally tracked for reproducible installs
 
-### \[2.0.0\] -- 2026-01-30
+## License
 
-#### 🐛 Bug Fixes
-
--   Fixed broken wires by switching storage from object refs to gate IDs
--   Wires now persist across drag, delete, and load
--   Fixed stale closure issues in evaluation logic
--   Enabled canvas pointer events for wire deletion
--   Fixed connection point active state visuals
--   Corrected `useCallback` dependency arrays
-
-#### ✨ New Features
-
--   Undo/Redo system with 50-state history
--   Keyboard shortcuts for undo, redo, delete, cancel
--   Click-to-delete wires
--   Visual undo/redo buttons
--   Improved sidebar instructions
-
-#### 🎨 Improvements
-
--   Better immutable state management
--   Performance optimizations
--   Improved wire deletion UX
--   Clearer visual history feedback
-
-------------------------------------------------------------------------
-
-### \[1.0.0\] -- Initial Release
-
--   Drag-and-drop logic gate canvas
--   10 gate types
--   Wire connections
--   Real-time evaluation
--   Truth table generation
--   Circuit save/load
--   Cyberpunk UI theme
--   Animated glowing wires
--   Stats panel
--   Right-click gate deletion
-
-------------------------------------------------------------------------
-
-## 📄 License
-
-Proprietary License -- Copyright (c) 2026 Muhammad Saad Amin. All Rights Reserved.
-
-## 🙌 Credits
-
-Original concept: **Boolforge**\
-React conversion and enhancements: Modern React refactor
+Proprietary License. All rights reserved.

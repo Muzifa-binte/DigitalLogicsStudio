@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Navbar } from "./Navbar";
 import HeroSection from "./HeroSection";
 import Footer from "./Footer";
@@ -17,9 +18,37 @@ const topicGroupOrder = {
 const Home = () => {
   const { theme, toggle: toggleTheme } = useTheme();
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [authAlert, setAuthAlert] = React.useState("");
   const resultsRef = React.useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const incomingMessage = location.state?.authMessage;
+
+    if (!incomingMessage) {
+      return;
+    }
+
+    setAuthAlert(incomingMessage);
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.pathname, location.state, navigate]);
+
+  React.useEffect(() => {
+    if (!authAlert) {
+      return undefined;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setAuthAlert("");
+    }, 4500);
+
+    return () => window.clearTimeout(timerId);
+  }, [authAlert]);
+
   const handleHomeClick = React.useCallback(() => {
     setSearchTerm("");
+    setAuthAlert("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
@@ -65,6 +94,22 @@ const Home = () => {
       />
 
       <main className="home-main">
+        {authAlert ? (
+          <div className="home-auth-alert-wrap">
+            <div className="home-auth-alert" role="status" aria-live="polite">
+              <span>{authAlert}</span>
+              <button
+                type="button"
+                className="home-auth-alert-close"
+                onClick={() => setAuthAlert("")}
+                aria-label="Dismiss login alert"
+              >
+                x
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         <HeroSection
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}

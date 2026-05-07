@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function HeroSection({ searchTerm, setSearchTerm, onSearchSubmit }) {
   const heroRef = useRef(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const el = heroRef.current;
@@ -46,13 +48,14 @@ export default function HeroSection({ searchTerm, setSearchTerm, onSearchSubmit 
       <div className="home-hero-content">
         <div className="hero-badge">
           <span className="hero-badge-dot" aria-hidden="true" />
-          Free interactive digital logic platform
+          {user ? `Welcome back, ${user.name}` : "Free interactive digital logic platform"}
         </div>
 
         <h2>Explore, visualize and<br /> master digital logic.</h2>
         <p>
-          Jump into interactive tools for circuits, Karnaugh maps, number
-          systems, and binary arithmetic — all in one smooth experience.
+          {user
+            ? "Your account is active. Keep building with circuits, Karnaugh maps, number systems, and binary arithmetic in one smooth workspace."
+            : "Jump into interactive tools for circuits, Karnaugh maps, number systems, and binary arithmetic — all in one smooth experience."}
         </p>
 
         <form className="search-container" onSubmit={onSearchSubmit} role="search">

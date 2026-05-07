@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const NAV_LINKS = [
   { to: "/boolforge", label: "Circuit Forge" },
@@ -36,9 +37,23 @@ function MoonIcon() {
 
 export function Navbar({ toggleTheme, theme, onHomeClick }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, isLoading, logout } = useAuth();
+  const navigate = useNavigate();
+
   const handleHomeClick = () => {
     setMenuOpen(false);
     onHomeClick?.();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setMenuOpen(false);
+    }
   };
 
   return (
@@ -101,6 +116,45 @@ export function Navbar({ toggleTheme, theme, onHomeClick }) {
         </nav>
 
         <div className="home-nav-controls">
+          {!isLoading && (
+            <div className="home-auth-actions">
+              {user ? (
+                <>
+                  <Link
+                    to="/"
+                    className="home-user-badge"
+                    onClick={handleHomeClick}
+                  >
+                    {user.name}
+                  </Link>
+                  <button
+                    type="button"
+                    className="home-auth-btn home-auth-btn--ghost"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="home-auth-btn home-auth-btn--ghost"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="home-auth-btn home-auth-btn--primary"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
           <button
             onClick={toggleTheme}
             className="home-theme-btn"
@@ -141,6 +195,45 @@ export function Navbar({ toggleTheme, theme, onHomeClick }) {
               {label}
             </NavLink>
           ))}
+          {!isLoading && (
+            <div className="home-mobile-auth">
+              {user ? (
+                <>
+                  <Link
+                    to="/"
+                    className="home-user-badge"
+                    onClick={handleHomeClick}
+                  >
+                    {user.name}
+                  </Link>
+                  <button
+                    type="button"
+                    className="home-auth-btn home-auth-btn--ghost"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="home-auth-btn home-auth-btn--ghost"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="home-auth-btn home-auth-btn--primary"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </nav>
     </header>

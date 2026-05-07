@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useTheme } from "./context/ThemeContext";
 
 // PAGES:
@@ -89,7 +89,8 @@ import StaticDynamicRAM from "./pages/Memory/StaticDynamicRAM";
 import ArrayOfRAMICs from "./pages/Memory/ArrayOfRAMICs";
 import MemoryConstructionRAM from "./pages/Memory/MemoryConstructionRAM";
 import DLDTrainerBoard from "./pages/TrainerBoard";
-import { Analytics } from "@vercel/analytics/react";
+import LoginPage from "./pages/Auth/LoginPage";
+import SignupPage from "./pages/Auth/SignupPage";
 
 function App() {
   const { theme } = useTheme();
@@ -97,10 +98,12 @@ function App() {
   return (
     <div className={`app-root ${theme}`}>
       <BrowserRouter>
-        <Analytics />
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/profile" element={<Navigate to="/" replace />} />
           <Route path="/boolforge" element={<Boolforge />} />
           <Route path="/significant-digits" element={<SignificantDigits />} />
           <Route path="/bcd-notation" element={<BCDNotation />} />

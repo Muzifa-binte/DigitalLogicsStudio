@@ -5,7 +5,16 @@ import ProblemModal from "./ProblemModal";
 import "./Problems.css";
 
 const FILTERS = ["All", "Easy", "Medium", "Hard"];
-const TAG_FILTERS = ["All", "Combinational", "Sequential", "Arithmetic", "MUX", "Decoder", "Parity", "Latch"];
+const TAG_FILTERS = [
+  "All",
+  "Combinational",
+  "Sequential",
+  "Arithmetic",
+  "MUX",
+  "Decoder",
+  "Parity",
+  "Latch",
+];
 
 const ProblemsSection = () => {
   const [activeProblem, setActiveProblem] = useState(null);
@@ -66,7 +75,9 @@ const ProblemsSection = () => {
           ))}
         </div>
       ) : (
-        <div className="prob-empty">No problems match the selected filters.</div>
+        <div className="prob-empty">
+          No problems match the selected filters.
+        </div>
       )}
 
       {/* Modal */}

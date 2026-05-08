@@ -890,6 +890,155 @@ const problemsData = [
     inputs: ["D", "S2", "S1", "S0"],
     outputs: ["Y0", "Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7"],
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 13 — SR NOR Latch (Basic SR Latch)
+  // Inputs: S, R  |  Outputs: Q, Qb
+  // Built from two cross-coupled NOR gates.
+  // Forbidden state: S=1, R=1 (excluded from truth table).
+  // Truth table covers: Reset (S=0,R=1), Set (S=1,R=0), and Hold (S=0,R=0)
+  // with both initial Q states where relevant.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    id: 13,
+    title: "SR NOR Latch",
+    difficulty: "Medium",
+    tags: ["Sequential", "Latch"],
+    description:
+      "Design a basic SR latch using two cross-coupled NOR gates. " +
+      "Input S (Set) drives Q high; input R (Reset) drives Q low. " +
+      "When both S and R are 0 the latch holds its previous state. " +
+      "The input combination S=1, R=1 is forbidden and is not tested.",
+    // Truth table: only the valid, non-forbidden rows.
+    // For the Hold state (S=0, R=0) we test both Q=0→0 and Q=1→1.
+    truthTable: [
+      // Reset: R=1, S=0 → Q=0, Qb=1 (regardless of previous Q)
+      { S: 0, R: 1, Q: 0, Qb: 1 },
+      // Set:   S=1, R=0 → Q=1, Qb=0 (regardless of previous Q)
+      { S: 1, R: 0, Q: 1, Qb: 0 },
+      // Hold (after Reset): S=0, R=0 → Q stays 0
+      { S: 0, R: 0, Q: 0, Qb: 1 },
+      // Hold (after Set):   S=0, R=0 → Q stays 1
+      { S: 0, R: 0, Q: 1, Qb: 0 },
+    ],
+    equations: ["Q  = (R + Qb)'   [upper NOR]", "Qb = (S + Q)'    [lower NOR]"],
+    hint: "Place two NOR gates. Feed R and Qb into the top NOR to get Q; feed S and Q into the bottom NOR to get Qb. The cross-coupling (Q → lower NOR, Qb → upper NOR) creates the memory.",
+    inputs: ["S", "R"],
+    outputs: ["Q", "Qb"],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 14 — SR NAND Latch (Active-Low SR Latch)
+  // Inputs: S_n (S̄), R_n (R̄)  |  Outputs: Q, Qb
+  // Built from two cross-coupled NAND gates.
+  // Inputs are active-low: assert by pulling to 0.
+  // Forbidden state: S_n=0, R_n=0 (excluded from truth table).
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    id: 14,
+    title: "SR NAND Latch",
+    difficulty: "Medium",
+    tags: ["Sequential", "Latch"],
+    description:
+      "Build an SR latch using two cross-coupled NAND gates. " +
+      "The inputs are active-low: S_n=0 sets Q=1; R_n=0 resets Q=0. " +
+      "When both inputs are 1 the latch holds its state. " +
+      "The combination S_n=0 and R_n=0 is forbidden and is not tested.",
+    truthTable: [
+      // Set: S_n=0, R_n=1 → Q=1, Qb=0
+      { S_n: 0, R_n: 1, Q: 1, Qb: 0 },
+      // Reset: S_n=1, R_n=0 → Q=0, Qb=1
+      { S_n: 1, R_n: 0, Q: 0, Qb: 1 },
+      // Hold (Q=1): S_n=1, R_n=1 → Q stays 1
+      { S_n: 1, R_n: 1, Q: 1, Qb: 0 },
+      // Hold (Q=0): S_n=1, R_n=1 → Q stays 0
+      { S_n: 1, R_n: 1, Q: 0, Qb: 1 },
+    ],
+    equations: [
+      "Q  = (S_n · Qb)'  [upper NAND]",
+      "Qb = (R_n · Q)'   [lower NAND]",
+    ],
+    hint: "Place two NAND gates. The top NAND receives S_n and Qb and produces Q; the bottom NAND receives R_n and Q and produces Qb. Because NAND is used the inputs are active-low — a 0 asserts the action.",
+    inputs: ["S_n", "R_n"],
+    outputs: ["Q", "Qb"],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 15 — Gated SR Latch (SR Latch with Enable)
+  // Inputs: S, R, En  |  Outputs: Q, Qb
+  // The SR NOR latch is gated by an Enable (clock) signal.
+  // When En=0 the latch holds regardless of S and R.
+  // When En=1 it behaves as a normal SR latch (S=R=1 still forbidden).
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    id: 15,
+    title: "Gated SR Latch",
+    difficulty: "Medium",
+    tags: ["Sequential", "Latch"],
+    description:
+      "Extend the basic SR latch with an Enable (En) control input. " +
+      "When En=0 the latch ignores S and R and holds its current state. " +
+      "When En=1 it behaves as a normal SR NOR latch: S sets Q, R resets Q, " +
+      "and S=R=0 holds. The combination En=1, S=1, R=1 is forbidden.",
+    truthTable: [
+      // En=0 → Hold regardless of S, R (show one representative Q=0 and Q=1)
+      { En: 0, S: 0, R: 0, Q: 0, Qb: 1 },
+      { En: 0, S: 0, R: 0, Q: 1, Qb: 0 },
+      { En: 0, S: 1, R: 0, Q: 0, Qb: 1 },
+      { En: 0, S: 1, R: 0, Q: 1, Qb: 0 },
+      { En: 0, S: 0, R: 1, Q: 0, Qb: 1 },
+      { En: 0, S: 0, R: 1, Q: 1, Qb: 0 },
+      // En=1, S=0, R=0 → Hold
+      { En: 1, S: 0, R: 0, Q: 0, Qb: 1 },
+      { En: 1, S: 0, R: 0, Q: 1, Qb: 0 },
+      // En=1, S=1, R=0 → Set  (Q=1)
+      { En: 1, S: 1, R: 0, Q: 1, Qb: 0 },
+      // En=1, S=0, R=1 → Reset (Q=0)
+      { En: 1, S: 0, R: 1, Q: 0, Qb: 1 },
+    ],
+    equations: [
+      "S_int = S · En",
+      "R_int = R · En",
+      "Q  = (R_int + Qb)'",
+      "Qb = (S_int + Q)'",
+    ],
+    hint: "Add two AND gates before the NOR latch: one gates S through En (S_int = S·En), the other gates R through En (R_int = R·En). Feed S_int and R_int into the standard SR NOR latch.",
+    inputs: ["En", "S", "R"],
+    outputs: ["Q", "Qb"],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 16 — D Latch (Transparent Latch)
+  // Inputs: D, En  |  Outputs: Q, Qb
+  // Eliminates the forbidden state of the SR latch by forcing R = D'.
+  // When En=1 (transparent): Q follows D immediately.
+  // When En=0 (hold):        Q retains its last value.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    id: 16,
+    title: "D Latch",
+    difficulty: "Easy",
+    tags: ["Sequential", "Latch"],
+    description:
+      "Design a D (Data / Transparent) latch. " +
+      "When Enable (En) is 1 the output Q transparently follows the data input D. " +
+      "When En goes to 0 the latch freezes and Q holds its last value. " +
+      "There is no forbidden input combination.",
+    truthTable: [
+      // En=1 (transparent): Q = D
+      { En: 1, D: 0, Q: 0, Qb: 1 },
+      { En: 1, D: 1, Q: 1, Qb: 0 },
+      // En=0 (hold): Q keeps previous value
+      { En: 0, D: 0, Q: 0, Qb: 1 }, // previous Q was 0
+      { En: 0, D: 0, Q: 1, Qb: 0 }, // previous Q was 1
+      { En: 0, D: 1, Q: 0, Qb: 1 }, // previous Q was 0
+      { En: 0, D: 1, Q: 1, Qb: 0 }, // previous Q was 1
+    ],
+    equations: ["S = D · En", "R = D' · En", "Q  = (R + Qb)'", "Qb = (S + Q)'"],
+    hint: "Use a NOT gate to create D'. Then AND D with En to get S, and AND D' with En to get R. Wire S and R into a standard SR NOR latch. Because R is always D' the forbidden state (S=R=1) can never occur.",
+    inputs: ["En", "D"],
+    outputs: ["Q", "Qb"],
+  },
 ];
 
 export default problemsData;

@@ -7,6 +7,7 @@ import ArticleSection from "./ArticleSection";
 import homeData from "./HomeData";
 import { useTheme } from "../../context/ThemeContext";
 import ProblemsSection from "../Problems/ProblemsSection";
+import { buildSearchIndex, searchIndexedItems } from "../../utils/search";
 import "./Home.css";
 
 const topicGroupOrder = {
@@ -19,9 +20,14 @@ const Home = () => {
   const { theme, toggle: toggleTheme } = useTheme();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [authAlert, setAuthAlert] = React.useState("");
+  const deferredSearchTerm = React.useDeferredValue(searchTerm);
   const resultsRef = React.useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const indexedHomeData = React.useMemo(
+    () => homeData.map((item) => buildSearchIndex(item)),
+    [],
+  );
 
   React.useEffect(() => {
     const incomingMessage = location.state?.authMessage;
@@ -52,13 +58,9 @@ const Home = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const filteredData = homeData.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.links.some((link) =>
-        link.text.toLowerCase().includes(searchTerm.toLowerCase()),
-      ),
+  const filteredData = React.useMemo(
+    () => searchIndexedItems(indexedHomeData, deferredSearchTerm),
+    [deferredSearchTerm, indexedHomeData],
   );
 
   const handleSearchSubmit = (event) => {

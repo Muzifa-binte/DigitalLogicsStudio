@@ -638,7 +638,10 @@ const CircuitModal = ({ open, onClose, problem }) => {
       <div style={S.body}>
         {/* Boolforge canvas */}
         <div style={S.canvas}>
-          <Boolforge onCircuitChange={handleCircuitChange} />
+          <Boolforge
+            onCircuitChange={handleCircuitChange}
+            portNames={{ inputs: problem.inputs, outputs: problem.outputs }}
+          />
         </div>
 
         {/* Result panel */}

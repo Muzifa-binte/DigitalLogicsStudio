@@ -26,6 +26,7 @@ const Boolforge = ({
   simplifiedExpression = null,
   variables = [],
   onCircuitChange,
+  portNames = null, // { inputs: string[], outputs: string[] } — from problem
 }) => {
   const [gates, setGates] = useState([]);
   const [wires, setWires] = useState([]);
@@ -655,45 +656,12 @@ const Boolforge = ({
   };
 
   // ── Label generators ───────────────────────────────────────────────────────
-  const generateInputLabel = (index) => {
-    const alphabet = "ABCDEFGHIJKLM";
-    const base = alphabet.length;
-    if (index < base) return alphabet[index];
-    let label = "";
-    let remaining = index - base;
-    let length = 2;
-    let maxForLength = Math.pow(base, length);
-    while (remaining >= maxForLength) {
-      remaining -= maxForLength;
-      length++;
-      maxForLength = Math.pow(base, length);
-    }
-    for (let i = 0; i < length; i++) {
-      label = alphabet[remaining % base] + label;
-      remaining = Math.floor(remaining / base);
-    }
-    return label;
-  };
-
-  const generateOutputLabel = (index) => {
-    const alphabet = "ZYXWVUTSRQPON";
-    const base = alphabet.length;
-    if (index < base) return alphabet[index];
-    let label = "";
-    let remaining = index - base;
-    let length = 2;
-    let maxForLength = Math.pow(base, length);
-    while (remaining >= maxForLength) {
-      remaining -= maxForLength;
-      length++;
-      maxForLength = Math.pow(base, length);
-    }
-    for (let i = 0; i < length; i++) {
-      label = alphabet[remaining % base] + label;
-      remaining = Math.floor(remaining / base);
-    }
-    return label;
-  };
+  // If a problem is loaded, use its exact port names in order.
+  // Otherwise fall back to I0, I1, … / S0, S1, …
+  const generateInputLabel = (index) =>
+    portNames?.inputs?.[index] ?? `I${index}`;
+  const generateOutputLabel = (index) =>
+    portNames?.outputs?.[index] ?? `S${index}`;
 
   // ── Derived state ──────────────────────────────────────────────────────────
   const inputGates = React.useMemo(

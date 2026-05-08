@@ -11,6 +11,130 @@ const difficultyColor = {
 const ProblemModal = ({ problem, onClose }) => {
   const [circuitOpen, setCircuitOpen] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [circuitGates, setCircuitGates] = useState([]);
+  const [circuitWires, setCircuitWires] = useState([]);
+  const [submitResult, setSubmitResult] = useState(null); // null | { passed: bool, details: string }
+
+  // Validate the circuit against the problem's truth table
+  const handleSubmitCircuit = () => {
+    const inputs = circuitGates.filter((g) => g.type === "INPUT");
+    const outputs = circuitGates.filter((g) => g.type === "OUTPUT");
+
+    if (inputs.length === 0 || outputs.length === 0) {
+      setSubmitResult({
+        passed: false,
+        details:
+          "Circuit has no INPUT or OUTPUT gates. Add and label them to match the problem ports.",
+      });
+      return;
+    }
+
+    // Check port name alignment
+    const inputLabels = inputs.map((g) => g.label);
+    const outputLabels = outputs.map((g) => g.label);
+    const missingIn = problem.inputs.filter((p) => !inputLabels.includes(p));
+    const missingOut = problem.outputs.filter((p) => !outputLabels.includes(p));
+    if (missingIn.length > 0 || missingOut.length > 0) {
+      const msg = [
+        missingIn.length ? `Missing INPUT gates: ${missingIn.join(", ")}` : "",
+        missingOut.length
+          ? `Missing OUTPUT gates: ${missingOut.join(", ")}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+      setSubmitResult({
+        passed: false,
+        details: `Port name mismatch:\n${msg}\n\nRename your gates to match exactly.`,
+      });
+      return;
+    }
+
+    // Gate evaluation helper — tempGates must be passed explicitly so every
+    // recursive call sees the INPUT values patched for the current truth-table row.
+    const evaluateGate = (gate, rowGates, visited = new Set()) => {
+      if (!gate || visited.has(gate.id)) return false;
+      if (gate.type === "INPUT") return gate.inputValues[0] || false;
+      const newVisited = new Set(visited);
+      newVisited.add(gate.id);
+      const inputs = [];
+      circuitWires.forEach((wire) => {
+        if (wire.toId === gate.id) {
+          const from = rowGates.find((g) => g.id === wire.fromId);
+          if (from)
+            inputs[wire.toIndex] = evaluateGate(from, rowGates, newVisited);
+        }
+      });
+      const ci = inputs.filter((v) => v !== undefined);
+      switch (gate.type) {
+        case "AND":
+          return ci.length > 0 && ci.every(Boolean);
+        case "OR":
+          return ci.some(Boolean);
+        case "NOT":
+          return inputs[0] !== undefined ? !inputs[0] : false;
+        case "NAND":
+          return !(ci.length > 0 && ci.every(Boolean));
+        case "NOR":
+          return !ci.some(Boolean);
+        case "XOR":
+          return ci.length >= 2 && ci.reduce((a, v) => a !== v, false);
+        case "XNOR":
+          return ci.length >= 2 && !ci.reduce((a, v) => a !== v, false);
+        case "BUFFER":
+        case "OUTPUT":
+          return inputs[0] ?? false;
+        default:
+          return false;
+      }
+    };
+
+    // Run against truth table
+    const table = problem.truthTable;
+    let failures = [];
+    table.forEach((row, rowIdx) => {
+      const tempGates = circuitGates.map((g) => {
+        if (g.type === "INPUT") {
+          const val = row[g.label];
+          return { ...g, inputValues: [val === 1 || val === true] };
+        }
+        return g;
+      });
+      problem.outputs.forEach((outLabel) => {
+        const outGate = tempGates.find((g) => g.label === outLabel);
+        if (!outGate) return;
+        const computed = evaluateGate(outGate, tempGates, new Set()) ? 1 : 0;
+        const expected = row[outLabel];
+        if (computed !== expected) {
+          failures.push({
+            row: rowIdx + 1,
+            output: outLabel,
+            expected,
+            computed,
+          });
+        }
+      });
+    });
+
+    if (failures.length === 0) {
+      setSubmitResult({
+        passed: true,
+        details: `All ${table.length} truth table rows passed! ✅`,
+      });
+    } else {
+      const shown = failures.slice(0, 5);
+      const detail = shown
+        .map(
+          (f) =>
+            `Row ${f.row}: ${f.output} expected ${f.expected}, got ${f.computed}`,
+        )
+        .join("\n");
+      setSubmitResult({
+        passed: false,
+        details: `${failures.length} row(s) failed:\n${detail}${failures.length > 5 ? `\n…and ${failures.length - 5} more` : ""}`,
+      });
+    }
+  };
 
   if (!problem) return null;
 
@@ -21,6 +145,13 @@ const ProblemModal = ({ problem, onClose }) => {
         open={true}
         onClose={() => setCircuitOpen(false)}
         problem={problem}
+        onCircuitChange={(gates, wires) => {
+          setCircuitGates(gates);
+          setCircuitWires(wires);
+        }}
+        onSubmit={handleSubmitCircuit}
+        submitResult={submitResult}
+        onClearResult={() => setSubmitResult(null)}
       />
     );
   }
@@ -71,57 +202,35 @@ const ProblemModal = ({ problem, onClose }) => {
             </section>
 
             <section className="prob-section">
-              <h4>
-                Truth Table
-                {problem.displayTruthTable && (
-                  <span
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: 400,
-                      textTransform: "none",
-                      letterSpacing: 0,
-                      color: "var(--secondary-text, #8899aa)",
-                      marginLeft: "0.5rem",
-                    }}
-                  >
-                    (condensed — full table used for validation)
-                  </span>
-                )}
-              </h4>
+              <h4>Truth Table</h4>
               <div className="prob-table-wrap">
-                {(() => {
-                  const tableData =
-                    problem.displayTruthTable ?? problem.truthTable;
-                  return (
-                    <table className="prob-truth-table">
-                      <thead>
-                        <tr>
-                          {Object.keys(tableData[0]).map((col) => (
-                            <th key={col}>{col}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tableData.map((row, i) => (
-                          <tr key={i}>
-                            {Object.values(row).map((val, j) => (
-                              <td
-                                key={j}
-                                className={
-                                  typeof val === "number" && val === 1
-                                    ? "cell-one"
-                                    : ""
-                                }
-                              >
-                                {String(val)}
-                              </td>
-                            ))}
-                          </tr>
+                <table className="prob-truth-table">
+                  <thead>
+                    <tr>
+                      {Object.keys(problem.truthTable[0]).map((col) => (
+                        <th key={col}>{col}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {problem.truthTable.map((row, i) => (
+                      <tr key={i}>
+                        {Object.values(row).map((val, j) => (
+                          <td
+                            key={j}
+                            className={
+                              typeof val === "number" && val === 1
+                                ? "cell-one"
+                                : ""
+                            }
+                          >
+                            {String(val)}
+                          </td>
                         ))}
-                      </tbody>
-                    </table>
-                  );
-                })()}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </section>
 

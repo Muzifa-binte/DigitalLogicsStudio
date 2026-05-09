@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import authService from "../services/authService";
+import progressService from "../services/progressService";
 
 const AuthContext = createContext(null);
 
@@ -58,6 +59,16 @@ export function AuthProvider({ children }) {
     return response.user;
   };
 
+  const markProblemSolved = async (problemId) => {
+    const response = await progressService.completeProblem(problemId);
+    setUser(response.user);
+    return response.user;
+  };
+
+  const hasSolvedProblem = (problemId) => {
+    return Boolean(user?.solvedProblems?.includes(problemId));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -68,6 +79,8 @@ export function AuthProvider({ children }) {
         register,
         logout,
         refreshUser,
+        markProblemSolved,
+        hasSolvedProblem,
       }}
     >
       {children}

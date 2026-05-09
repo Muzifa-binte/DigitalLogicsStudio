@@ -1,153 +1,7 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Boolforge from "../pages/Boolforge";
-
-// ─── Gate evaluator (mirrors Boolforge's evaluateGateWithGates) ───────────────
-function evalGate(
-  gate,
-  gatesArray,
-  wiresArray,
-  depth = 0,
-  visited = new Set(),
-) {
-  if (depth > 100 || !gate || visited.has(gate.id)) return false;
-  if (gate.type === "INPUT") return gate.inputValues[0] || false;
-
-  const newVisited = new Set(visited);
-  newVisited.add(gate.id);
-  const inputs = [];
-
-  wiresArray.forEach((wire) => {
-    if (wire.toId === gate.id) {
-      const fromGate = gatesArray.find((g) => g.id === wire.fromId);
-      if (fromGate)
-        inputs[wire.toIndex] = evalGate(
-          fromGate,
-          gatesArray,
-          wiresArray,
-          depth + 1,
-          newVisited,
-        );
-    }
-  });
-
-  const ci = inputs.filter((v) => v !== undefined);
-  switch (gate.type) {
-    case "AND":
-      return ci.length > 0 && ci.every(Boolean);
-    case "OR":
-      return ci.some(Boolean);
-    case "NOT":
-      return inputs[0] !== undefined ? !inputs[0] : false;
-    case "NAND":
-      return !(ci.length > 0 && ci.every(Boolean));
-    case "NOR":
-      return !ci.some(Boolean);
-    case "XOR":
-      return ci.length >= 2 && ci.reduce((a, v) => a !== v, false);
-    case "XNOR":
-      return ci.length >= 2 && !ci.reduce((a, v) => a !== v, false);
-    case "BUFFER":
-    case "OUTPUT":
-      return inputs[0] ?? false;
-    default:
-      return false;
-  }
-}
-
-// ─── Validate circuit against a problem's truth table ────────────────────────
-// Matches inputs by POSITION (order in the circuit's INPUT gate list)
-// and outputs by POSITION (order in the circuit's OUTPUT gate list).
-// Optionally uses a user-supplied assignment map: { inputMap, outputMap }
-//   inputMap[problemInputName]  → circuit gate id
-//   outputMap[problemOutputName] → circuit gate id
-function validateCircuit(gates, wires, problem, assignment = null) {
-  const inputGates = gates.filter((g) => g.type === "INPUT");
-  const outputGates = gates.filter((g) => g.type === "OUTPUT");
-
-  const probInputs = problem.inputs;
-  const probOutputs = problem.outputs;
-
-  if (inputGates.length !== probInputs.length)
-    return {
-      pass: false,
-      rows: [],
-      error: `Circuit has ${inputGates.length} INPUT gate(s) but problem needs ${probInputs.length}.`,
-    };
-  if (outputGates.length !== probOutputs.length)
-    return {
-      pass: false,
-      rows: [],
-      error: `Circuit has ${outputGates.length} OUTPUT gate(s) but problem needs ${probOutputs.length}.`,
-    };
-
-  // Try label-based matching (e.g. user renamed gate to "S1", "I0", "Y")
-  const tryLabelMatch = (portNames, gateList) => {
-    const matched = portNames.map((name) =>
-      gateList.find((g) => g.label === name),
-    );
-    return matched.every(Boolean) ? matched : null;
-  };
-
-  let orderedInputs, orderedOutputs;
-
-  if (
-    assignment &&
-    (Object.keys(assignment.inputMap).length > 0 ||
-      Object.keys(assignment.outputMap).length > 0)
-  ) {
-    // 1st priority: user manually mapped via the assignment panel
-    orderedInputs = probInputs.map((name) =>
-      gates.find((g) => g.id === assignment.inputMap[name]),
-    );
-    orderedOutputs = probOutputs.map((name) =>
-      gates.find((g) => g.id === assignment.outputMap[name]),
-    );
-  } else {
-    // 2nd priority: label match, 3rd priority: positional fallback
-    orderedInputs = tryLabelMatch(probInputs, inputGates) ?? inputGates;
-    orderedOutputs = tryLabelMatch(probOutputs, outputGates) ?? outputGates;
-  }
-
-  if (orderedInputs.some((g) => !g) || orderedOutputs.some((g) => !g))
-    return {
-      pass: false,
-      rows: [],
-      error: "Assignment is incomplete. Please map all inputs and outputs.",
-    };
-
-  const rows = [];
-  let allPass = true;
-
-  for (const truthRow of problem.truthTable) {
-    const tempGates = gates.map((g) => {
-      const idx = orderedInputs.findIndex((ig) => ig && ig.id === g.id);
-      if (idx !== -1) {
-        return { ...g, inputValues: [!!truthRow[probInputs[idx]]] };
-      }
-      return g;
-    });
-
-    const gotValues = {};
-    let rowPass = true;
-    for (let oi = 0; oi < orderedOutputs.length; oi++) {
-      const outGate = tempGates.find((g) => g.id === orderedOutputs[oi].id);
-      const got = evalGate(outGate, tempGates, wires) ? 1 : 0;
-      const expected = truthRow[probOutputs[oi]];
-      gotValues[probOutputs[oi]] = got;
-      if (got !== expected) rowPass = false;
-    }
-
-    if (!rowPass) allPass = false;
-    rows.push({
-      inputs: truthRow,
-      expected: truthRow,
-      got: gotValues,
-      pass: rowPass,
-    });
-  }
-
-  return { pass: allPass, rows, error: null };
-}
+import { useAuth } from "../context/AuthContext";
+import { validateCircuit } from "../utils/circuitProblemValidator";
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
@@ -335,6 +189,30 @@ const S = {
     fontSize: "0.78rem",
     cursor: "pointer",
   },
+  statusCard: (tone) => ({
+    borderRadius: 10,
+    padding: "0.45rem 0.8rem",
+    minWidth: 170,
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.12rem",
+    border:
+      tone === "complete"
+        ? "1px solid rgba(0,255,136,0.35)"
+        : tone === "warning"
+          ? "1px solid rgba(255,193,7,0.35)"
+          : tone === "error"
+            ? "1px solid rgba(255,51,102,0.35)"
+            : "1px solid var(--border-color,#2a3550)",
+    background:
+      tone === "complete"
+        ? "rgba(0,255,136,0.08)"
+        : tone === "warning"
+          ? "rgba(255,193,7,0.08)"
+          : tone === "error"
+            ? "rgba(255,51,102,0.08)"
+            : "rgba(255,255,255,0.03)",
+  }),
 };
 
 // ─── Gate Assignment Modal ────────────────────────────────────────────────────
@@ -520,8 +398,12 @@ const CircuitModal = ({ open, onClose, problem }) => {
   const [wires, setWires] = useState([]);
   const [result, setResult] = useState(null); // { pass, rows, error }
   const [showAssign, setShowAssign] = useState(false);
+  const [completionError, setCompletionError] = useState("");
+  const [isSavingCompletion, setIsSavingCompletion] = useState(false);
   // assignment: null → use positional, else { inputMap, outputMap }
   const [assignment, setAssignment] = useState({ inputMap: {}, outputMap: {} });
+  const { isAuthenticated, user, markProblemSolved, hasSolvedProblem } = useAuth();
+  const problemId = problem?.id;
   const isAssigned =
     Object.keys(assignment.inputMap).length > 0 ||
     Object.keys(assignment.outputMap).length > 0;
@@ -533,19 +415,106 @@ const CircuitModal = ({ open, onClose, problem }) => {
   }, []);
 
   const handleSubmit = () => {
+    if (!problem) {
+      return;
+    }
+
     const useAssignment = isAssigned ? assignment : null;
     const res = validateCircuit(gates, wires, problem, useAssignment);
     setResult(res);
   };
 
-  if (!open || !problem) return null;
-
   const inputGates = gates.filter((g) => g.type === "INPUT");
   const outputGates = gates.filter((g) => g.type === "OUTPUT");
-  const needInputs = problem.inputs.length;
-  const needOutputs = problem.outputs.length;
+  const needInputs = problem?.inputs.length ?? 0;
+  const needOutputs = problem?.outputs.length ?? 0;
   const hasRight =
     inputGates.length === needInputs && outputGates.length === needOutputs;
+  const isSolvedForUser = problem ? hasSolvedProblem(problem.id) : false;
+
+  const persistSolvedState = useCallback(async () => {
+    if (!problemId || !isAuthenticated || isSolvedForUser || isSavingCompletion) {
+      return;
+    }
+
+    setIsSavingCompletion(true);
+    setCompletionError("");
+
+    try {
+      await markProblemSolved(problemId);
+    } catch (error) {
+      setCompletionError(
+        error.response?.data?.message ||
+          "Circuit is correct, but progress could not be saved.",
+      );
+    } finally {
+      setIsSavingCompletion(false);
+    }
+  }, [
+    isAuthenticated,
+    isSolvedForUser,
+    isSavingCompletion,
+    markProblemSolved,
+    problemId,
+  ]);
+
+  useEffect(() => {
+    if (!open || !problem || !hasRight || isSolvedForUser) {
+      return;
+    }
+
+    const validationResult = validateCircuit(
+      gates,
+      wires,
+      problem,
+      isAssigned ? assignment : null,
+    );
+
+    if (!validationResult.pass) {
+      return;
+    }
+
+    setResult(validationResult);
+    persistSolvedState();
+  }, [
+    assignment,
+    gates,
+    hasRight,
+    isAssigned,
+    isSolvedForUser,
+    open,
+    persistSolvedState,
+    problem,
+    wires,
+  ]);
+
+  const completionTone = !isAuthenticated
+    ? "warning"
+    : completionError
+      ? "error"
+      : isSolvedForUser
+        ? "complete"
+        : "default";
+
+  const completionLabel = !isAuthenticated
+    ? "Guest mode"
+    : completionError
+      ? "Save issue"
+      : isSolvedForUser
+        ? "Completed"
+        : isSavingCompletion
+          ? "Saving..."
+          : "In progress";
+
+  const completionSubtext = !isAuthenticated
+    ? "Log in to save problem progress"
+    : completionError
+      ? completionError
+      : isSolvedForUser
+        ? `Saved for ${user?.name || "current user"}`
+        : "Build a correct circuit to complete this task";
+
+  if (!open || !problem) return null;
 
   return (
     <div style={S.overlay}>
@@ -627,6 +596,45 @@ const CircuitModal = ({ open, onClose, problem }) => {
         >
           ⚡ Submit Circuit
         </button>
+
+        <div style={S.statusCard(completionTone)}>
+          <span
+            style={{
+              fontSize: "0.68rem",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--secondary-text,#8899aa)",
+            }}
+          >
+            Progress
+          </span>
+          <span
+            style={{
+              fontSize: "0.86rem",
+              fontWeight: 800,
+              color:
+                completionTone === "complete"
+                  ? "var(--accent-primary,#00ff88)"
+                  : completionTone === "warning"
+                    ? "#fbbf24"
+                    : completionTone === "error"
+                      ? "var(--accent-danger,#ff3366)"
+                      : "var(--text-color,#e8f0ff)",
+            }}
+          >
+            {completionLabel}
+          </span>
+          <span
+            style={{
+              fontSize: "0.72rem",
+              color: "var(--secondary-text,#8899aa)",
+              lineHeight: 1.4,
+            }}
+          >
+            {completionSubtext}
+          </span>
+        </div>
 
         {/* Close */}
         <button style={S.closeBtn} onClick={onClose}>

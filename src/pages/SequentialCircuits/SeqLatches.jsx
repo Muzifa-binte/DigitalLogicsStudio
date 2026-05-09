@@ -1,10 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Lock, Unlock, Code2 } from "lucide-react";
 import SeqLayout from "./SeqLayout";
 import SeqTable from "./components/SeqTable";
 // import SeqBox from "./components/SeqBox";
 import SeqGrid from "./components/SeqGrid";
 import SeqTableData from "./data/SeqTableData";
+
+// ─── Timing Diagram CSS injection ────────────────────────────────────────────
+const TIMING_CSS = `
+.seq-timing-section {
+  margin: 1.5rem 0 2rem;
+  border-radius: 10px;
+  background: rgba(15,23,42,0.6);
+  border: 1px solid rgba(99,102,241,0.2);
+  padding: 1.1rem 1.2rem 1rem;
+}
+.seq-timing-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  margin: 0 0 0.4rem;
+  letter-spacing: 0.03em;
+}
+.seq-timing-desc {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0 0 0.9rem;
+  line-height: 1.55;
+}
+.seq-timing-wrap { overflow-x: auto; }
+.seq-timing-scroll { min-width: 0; }
+.seq-timing-legend {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin: 0.6rem 0 0;
+  letter-spacing: 0.02em;
+}
+.seq-timing-title {
+  font-size: 0.78rem;
+  color: #818cf8;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+`;
+const TimingStyles = () => {
+  useEffect(() => {
+    if (!document.getElementById("seq-timing-styles")) {
+      const el = document.createElement("style");
+      el.id = "seq-timing-styles";
+      el.textContent = TIMING_CSS;
+      document.head.appendChild(el);
+    }
+  }, []);
+  return null;
+};
 
 // ─── Feature data for grids ───────────────────────────────────────────────────
 const gatedSRLatchFeatures = [
@@ -32,6 +81,418 @@ const charEquationFeatures = [
     line: "Q⁺ = EN·D + EN̄·Q — Read: 'Q next is D when enabled, otherwise it stays as Q.' No forbidden states — always valid.",
   },
 ];
+
+// ─── Timing Diagram Helpers ───────────────────────────────────────────────────
+// Renders a clean waveform timing diagram as an inline SVG.
+// signals: [{ label, color, values }]  — values are 0/1 per time slot.
+// specialZones: [{ start, end, label }] — shaded regions (e.g. forbidden).
+const TimingDiagram = ({ title, signals, timeLabels, specialZones = [] }) => {
+  const SLOT_W = 52;
+  const ROW_H = 38;
+  const LABEL_W = 52;
+  const PAD_TOP = 28;
+  const PAD_BOT = 20;
+  const HIGH_Y = 6;
+  const LOW_Y = 24;
+  const n = timeLabels.length;
+  const svgW = LABEL_W + n * SLOT_W + 12;
+  const svgH = PAD_TOP + signals.length * ROW_H + PAD_BOT;
+
+  const wavePoints = (values) => {
+    const pts = [];
+    values.forEach((v, i) => {
+      const x = LABEL_W + i * SLOT_W;
+      const y = v === "?" ? (HIGH_Y + LOW_Y) / 2 : v ? HIGH_Y : LOW_Y;
+      if (i === 0) {
+        pts.push(`M${x},${y}`);
+      } else {
+        const prevY =
+          values[i - 1] === "?"
+            ? (HIGH_Y + LOW_Y) / 2
+            : values[i - 1]
+              ? HIGH_Y
+              : LOW_Y;
+        if (prevY !== y) pts.push(`L${x},${prevY} L${x},${y}`);
+        else pts.push(`L${x},${y}`);
+      }
+    });
+    // close to end of last slot
+    const lastY =
+      values[values.length - 1] === "?"
+        ? (HIGH_Y + LOW_Y) / 2
+        : values[values.length - 1]
+          ? HIGH_Y
+          : LOW_Y;
+    pts.push(`L${LABEL_W + n * SLOT_W},${lastY}`);
+    return pts.join(" ");
+  };
+
+  return (
+    <div className="seq-timing-wrap">
+      {title && <p className="seq-timing-title">{title}</p>}
+      <div className="seq-timing-scroll">
+        <svg
+          viewBox={`0 0 ${svgW} ${svgH}`}
+          width={svgW}
+          height={svgH}
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            display: "block",
+          }}
+        >
+          {/* Time slot background stripes */}
+          {timeLabels.map((_, i) => (
+            <rect
+              key={i}
+              x={LABEL_W + i * SLOT_W}
+              y={0}
+              width={SLOT_W}
+              height={svgH}
+              fill={
+                i % 2 === 0
+                  ? "rgba(255,255,255,0.02)"
+                  : "rgba(255,255,255,0.05)"
+              }
+            />
+          ))}
+
+          {/* Special zones (forbidden / hold shading) */}
+          {specialZones.map((z, i) => (
+            <g key={i}>
+              <rect
+                x={LABEL_W + z.start * SLOT_W}
+                y={PAD_TOP - 6}
+                width={(z.end - z.start) * SLOT_W}
+                height={signals.length * ROW_H}
+                fill={z.color || "rgba(239,68,68,0.12)"}
+                rx="3"
+              />
+              <text
+                x={LABEL_W + (z.start + (z.end - z.start) / 2) * SLOT_W}
+                y={PAD_TOP - 10}
+                fontSize="8"
+                fill={z.textColor || "#ef4444"}
+                textAnchor="middle"
+                fontWeight="700"
+                letterSpacing="0.05em"
+              >
+                {z.label}
+              </text>
+            </g>
+          ))}
+
+          {/* Grid vertical lines */}
+          {timeLabels.map((_, i) => (
+            <line
+              key={i}
+              x1={LABEL_W + i * SLOT_W}
+              y1={PAD_TOP - 4}
+              x2={LABEL_W + i * SLOT_W}
+              y2={svgH - PAD_BOT + 4}
+              stroke="rgba(148,163,184,0.15)"
+              strokeWidth="1"
+            />
+          ))}
+          <line
+            x1={LABEL_W + n * SLOT_W}
+            y1={PAD_TOP - 4}
+            x2={LABEL_W + n * SLOT_W}
+            y2={svgH - PAD_BOT + 4}
+            stroke="rgba(148,163,184,0.15)"
+            strokeWidth="1"
+          />
+
+          {/* Time labels */}
+          {timeLabels.map((lbl, i) => (
+            <text
+              key={i}
+              x={LABEL_W + i * SLOT_W + SLOT_W / 2}
+              y={14}
+              fontSize="9"
+              fill="#64748b"
+              textAnchor="middle"
+              letterSpacing="0.04em"
+            >
+              {lbl}
+            </text>
+          ))}
+          <text
+            x={LABEL_W + 2}
+            y={14}
+            fontSize="8"
+            fill="#475569"
+            letterSpacing="0.05em"
+          >
+            t→
+          </text>
+
+          {/* Signals */}
+          {signals.map((sig, si) => {
+            const rowY = PAD_TOP + si * ROW_H;
+            return (
+              <g key={si} transform={`translate(0,${rowY})`}>
+                {/* Signal label */}
+                <text
+                  x={LABEL_W - 6}
+                  y={(HIGH_Y + LOW_Y) / 2 + 4}
+                  fontSize="11"
+                  fill={sig.color}
+                  textAnchor="end"
+                  fontWeight="700"
+                >
+                  {sig.label}
+                </text>
+                {/* HIGH / LOW hint lines */}
+                <line
+                  x1={LABEL_W}
+                  y1={HIGH_Y}
+                  x2={LABEL_W + n * SLOT_W}
+                  y2={HIGH_Y}
+                  stroke="rgba(255,255,255,0.04)"
+                  strokeWidth="1"
+                  strokeDasharray="3,4"
+                />
+                <line
+                  x1={LABEL_W}
+                  y1={LOW_Y}
+                  x2={LABEL_W + n * SLOT_W}
+                  y2={LOW_Y}
+                  stroke="rgba(255,255,255,0.04)"
+                  strokeWidth="1"
+                  strokeDasharray="3,4"
+                />
+
+                {/* Waveform fill */}
+                {sig.values.map((v, i) => {
+                  if (v === "?") {
+                    return (
+                      <rect
+                        key={i}
+                        x={LABEL_W + i * SLOT_W}
+                        y={HIGH_Y}
+                        width={SLOT_W}
+                        height={LOW_Y - HIGH_Y}
+                        fill={`${sig.color}33`}
+                      />
+                    );
+                  }
+                  if (v) {
+                    return (
+                      <rect
+                        key={i}
+                        x={LABEL_W + i * SLOT_W}
+                        y={HIGH_Y}
+                        width={SLOT_W}
+                        height={LOW_Y - HIGH_Y}
+                        fill={`${sig.color}22`}
+                      />
+                    );
+                  }
+                  return null;
+                })}
+
+                {/* Waveform path */}
+                <path
+                  d={wavePoints(sig.values)}
+                  fill="none"
+                  stroke={sig.color}
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+
+                {/* ? markers */}
+                {sig.values.map((v, i) =>
+                  v === "?" ? (
+                    <text
+                      key={i}
+                      x={LABEL_W + i * SLOT_W + SLOT_W / 2}
+                      y={(HIGH_Y + LOW_Y) / 2 + 4}
+                      fontSize="11"
+                      fill={sig.color}
+                      textAnchor="middle"
+                      fontWeight="700"
+                    >
+                      ?
+                    </text>
+                  ) : null,
+                )}
+              </g>
+            );
+          })}
+
+          {/* Bottom axis */}
+          <line
+            x1={LABEL_W}
+            y1={svgH - PAD_BOT + 4}
+            x2={LABEL_W + n * SLOT_W}
+            y2={svgH - PAD_BOT + 4}
+            stroke="rgba(148,163,184,0.3)"
+            strokeWidth="1"
+          />
+        </svg>
+      </div>
+    </div>
+  );
+};
+
+// ─── SR Latch Timing Diagram ──────────────────────────────────────────────────
+const SRTimingDiagram = () => (
+  <div className="seq-timing-section">
+    <p className="seq-timing-header">📈 SR Latch — Timing Diagram</p>
+    <p className="seq-timing-desc">
+      A sequence of S and R transitions and the resulting Q output. Notice how Q
+      holds its value during the <strong>Hold</strong> phase (t3–t4), and how
+      the <strong>Forbidden</strong> zone (t6–t7, S=R=1) leaves Q undefined.
+    </p>
+    <TimingDiagram
+      timeLabels={["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8"]}
+      signals={[
+        { label: "S", color: "#818cf8", values: [0, 1, 0, 0, 0, 0, 1, 0, 0] },
+        { label: "R", color: "#f472b6", values: [0, 0, 0, 0, 1, 0, 1, 0, 1] },
+        {
+          label: "Q",
+          color: "#34d399",
+          values: [0, 1, 1, 1, 0, 0, "?", "?", 0],
+        },
+        {
+          label: "Q̄",
+          color: "#fb923c",
+          values: [1, 0, 0, 0, 1, 1, "?", "?", 1],
+        },
+      ]}
+      specialZones={[
+        {
+          start: 6,
+          end: 8,
+          label: "FORBIDDEN",
+          color: "rgba(239,68,68,0.10)",
+          textColor: "#ef4444",
+        },
+        {
+          start: 2,
+          end: 4,
+          label: "HOLD",
+          color: "rgba(250,204,21,0.07)",
+          textColor: "#fbbf24",
+        },
+      ]}
+    />
+    <p className="seq-timing-legend">
+      <span style={{ color: "#818cf8" }}>■ S</span> &nbsp;
+      <span style={{ color: "#f472b6" }}>■ R</span> &nbsp;
+      <span style={{ color: "#34d399" }}>■ Q</span> &nbsp;
+      <span style={{ color: "#fb923c" }}>■ Q̄</span> &nbsp;
+      <span style={{ color: "#fbbf24" }}>▒ Hold</span> &nbsp;
+      <span style={{ color: "#ef4444" }}>▒ Forbidden</span>
+    </p>
+  </div>
+);
+
+// ─── Gated SR Latch Timing Diagram ────────────────────────────────────────────
+const GatedSRTimingDiagram = () => (
+  <div className="seq-timing-section">
+    <p className="seq-timing-header">📈 Gated SR Latch — Timing Diagram</p>
+    <p className="seq-timing-desc">
+      EN acts as a gate. While <strong>EN=0</strong> (t0–t2, t5–t7), S and R
+      changes are completely ignored — Q stays frozen at 0 even though S or R
+      may be active. The latch only responds when <strong>EN=1</strong>: at t2
+      (S=1, R=0) → SET; t3 (S=0, R=1) → RESET; t7 (S=1, R=0) → SET; t8 (S=0,
+      R=1) → RESET.
+    </p>
+    <TimingDiagram
+      timeLabels={["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8"]}
+      signals={[
+        { label: "EN", color: "#a78bfa", values: [0, 0, 1, 1, 1, 0, 0, 1, 1] },
+        { label: "S", color: "#818cf8", values: [1, 0, 1, 0, 0, 1, 0, 1, 0] },
+        { label: "R", color: "#f472b6", values: [0, 1, 0, 1, 0, 0, 1, 0, 1] },
+        { label: "Q", color: "#34d399", values: [0, 0, 1, 0, 0, 0, 0, 1, 0] },
+      ]}
+      specialZones={[
+        {
+          start: 0,
+          end: 2,
+          label: "EN=0 (locked)",
+          color: "rgba(148,163,184,0.07)",
+          textColor: "#94a3b8",
+        },
+        {
+          start: 5,
+          end: 7,
+          label: "EN=0 (locked)",
+          color: "rgba(148,163,184,0.07)",
+          textColor: "#94a3b8",
+        },
+      ]}
+    />
+    <p className="seq-timing-legend">
+      <span style={{ color: "#a78bfa" }}>■ EN</span> &nbsp;
+      <span style={{ color: "#818cf8" }}>■ S</span> &nbsp;
+      <span style={{ color: "#f472b6" }}>■ R</span> &nbsp;
+      <span style={{ color: "#34d399" }}>■ Q</span> &nbsp;
+      <span style={{ color: "#94a3b8" }}>▒ Locked (EN=0)</span>
+    </p>
+  </div>
+);
+
+// ─── D Latch Timing Diagram ───────────────────────────────────────────────────
+const DLatchTimingDiagram = () => (
+  <div className="seq-timing-section">
+    <p className="seq-timing-header">📈 D Latch — Timing Diagram</p>
+    <p className="seq-timing-desc">
+      When <strong>EN=1</strong> the latch is transparent — Q mirrors D
+      immediately. When <strong>EN=0</strong> Q freezes at whatever D was when
+      EN fell. There is no forbidden state.
+    </p>
+    <TimingDiagram
+      timeLabels={["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8"]}
+      signals={[
+        { label: "EN", color: "#a78bfa", values: [0, 1, 1, 1, 0, 0, 1, 1, 0] },
+        { label: "D", color: "#818cf8", values: [0, 0, 1, 0, 1, 1, 1, 0, 0] },
+        { label: "Q", color: "#34d399", values: [0, 0, 1, 0, 0, 0, 1, 0, 0] },
+        { label: "Q̄", color: "#fb923c", values: [1, 1, 0, 1, 1, 1, 0, 1, 1] },
+      ]}
+      specialZones={[
+        {
+          start: 1,
+          end: 4,
+          label: "Transparent (EN=1)",
+          color: "rgba(52,211,153,0.06)",
+          textColor: "#34d399",
+        },
+        {
+          start: 6,
+          end: 8,
+          label: "Transparent (EN=1)",
+          color: "rgba(52,211,153,0.06)",
+          textColor: "#34d399",
+        },
+        {
+          start: 0,
+          end: 1,
+          label: "Hold",
+          color: "rgba(250,204,21,0.07)",
+          textColor: "#fbbf24",
+        },
+        {
+          start: 4,
+          end: 6,
+          label: "Hold (EN=0)",
+          color: "rgba(250,204,21,0.07)",
+          textColor: "#fbbf24",
+        },
+      ]}
+    />
+    <p className="seq-timing-legend">
+      <span style={{ color: "#a78bfa" }}>■ EN</span> &nbsp;
+      <span style={{ color: "#818cf8" }}>■ D</span> &nbsp;
+      <span style={{ color: "#34d399" }}>■ Q</span> &nbsp;
+      <span style={{ color: "#fb923c" }}>■ Q̄</span> &nbsp;
+      <span style={{ color: "#34d399" }}>▒ Transparent</span> &nbsp;
+      <span style={{ color: "#fbbf24" }}>▒ Hold</span>
+    </p>
+  </div>
+);
 
 // ─── SR Latch Simulator ───────────────────────────────────────────────────────
 // Simulates a NOR-based SR latch. Tracks Q across state changes so that the
@@ -100,7 +561,7 @@ const SRLatchSim = () => {
 
       <div className="seq-sim-inputs">
         <label className="seq-sim-label">
-          S — Set  {" "}
+          S — Set{" "}
           <button
             className={`seq-sim-toggle ${S ? "on" : "off"}`}
             onClick={handleS}
@@ -109,7 +570,8 @@ const SRLatchSim = () => {
           </button>
         </label>
         <label className="seq-sim-label">
-         {" "} R — Reset {" "}
+          {" "}
+          R — Reset{" "}
           <button
             className={`seq-sim-toggle ${R ? "on" : "off"}`}
             onClick={handleR}
@@ -254,7 +716,7 @@ const GatedSRSim = () => {
       </p>
       <div className="seq-sim-inputs">
         <label className="seq-sim-label">
-          EN (enable) {" "}
+          EN (enable){" "}
           <button
             className={`seq-sim-toggle ${EN ? "on" : "off"}`}
             onClick={handleEN}
@@ -263,7 +725,8 @@ const GatedSRSim = () => {
           </button>
         </label>
         <label className="seq-sim-label">
-         {" "} S{" "}
+          {" "}
+          S{" "}
           <button
             className={`seq-sim-toggle ${S ? "on" : "off"}`}
             onClick={() => {
@@ -275,7 +738,8 @@ const GatedSRSim = () => {
           </button>
         </label>
         <label className="seq-sim-label">
-         {" "} R {" "}
+          {" "}
+          R{" "}
           <button
             className={`seq-sim-toggle ${R ? "on" : "off"}`}
             onClick={() => {
@@ -347,7 +811,8 @@ const DLatchSim = () => {
           </button>
         </label>
         <label className="seq-sim-label">
-         {" "} EN (enable){" "}
+          {" "}
+          EN (enable){" "}
           <button
             className={`seq-sim-toggle ${EN ? "on" : "off"}`}
             onClick={() => handleEN(1 - EN)}
@@ -394,7 +859,13 @@ const DLatchSim = () => {
                   q: "Q (no change)",
                   mode: "Opaque / Hold",
                 },
-                { key: "en1d1", en: 1, d: 1, q: "1", mode: "Transparent → SET" },
+                {
+                  key: "en1d1",
+                  en: 1,
+                  d: 1,
+                  q: "1",
+                  mode: "Transparent → SET",
+                },
                 {
                   key: "en1d0",
                   en: 1,
@@ -428,6 +899,7 @@ const SeqLatches = () => (
     subtitle="The simplest 1-bit memory elements — they remember a value without needing a clock."
   >
     <div className="seq-content-body">
+      <TimingStyles />
       {/* ── What is a latch? ── */}
       <div className="seq-box">
         <span className="seq-box-title">What is a latch?</span>
@@ -462,7 +934,8 @@ const SeqLatches = () => (
       <div className="seq-latch-intro">
         <p className="seq-latch-intro-title">Inputs & Outputs</p>
         <p className="seq-latch-intro-desc">
-          It has two inputs and two outputs that are always complementary (opposites):
+          It has two inputs and two outputs that are always complementary
+          (opposites):
         </p>
         <ul className="seq-io-list">
           <li className="seq-io-item">
@@ -475,7 +948,9 @@ const SeqLatches = () => (
           </li>
           <li className="seq-io-item">
             <span className="seq-io-label">Q : </span>
-            <span className="seq-io-value">The stored bit (the "main" output)</span>
+            <span className="seq-io-value">
+              The stored bit (the "main" output)
+            </span>
           </li>
           <li className="seq-io-item">
             <span className="seq-io-label">Q̄ :</span>
@@ -499,6 +974,8 @@ const SeqLatches = () => (
       </div>
 
       <SRLatchSim />
+
+      <SRTimingDiagram />
 
       {/* NOR gate diagram */}
       <div className="seq-diagram">
@@ -749,6 +1226,8 @@ const SeqLatches = () => (
 
       <GatedSRSim />
 
+      <GatedSRTimingDiagram />
+
       {/* ── D Latch ── */}
       <h2>D Latch (Data / Transparent Latch)</h2>
       <p>
@@ -783,6 +1262,8 @@ const SeqLatches = () => (
       <SeqTable data={SeqTableData.DLatch} />
 
       <DLatchSim />
+
+      <DLatchTimingDiagram />
 
       {/* ── Characteristic equation ── */}
       <h2>Characteristic Equation</h2>

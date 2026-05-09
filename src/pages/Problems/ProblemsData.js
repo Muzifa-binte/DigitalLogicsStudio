@@ -598,6 +598,447 @@ const problemsData = [
     inputs: ["A", "B", "C"],
     outputs: ["P"],
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 9 — 1-to-4 Demultiplexer
+  // Inputs: D, S1, S0  |  Outputs: Y0, Y1, Y2, Y3
+  // Yi = D when (S1,S0) == i, else 0
+  // 2^3 = 8 rows — complete ✓
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    id: 11,
+    title: "1-to-4 Demultiplexer",
+    difficulty: "Medium",
+    tags: ["Combinational", "Decoder"],
+    description:
+      "Build a 1-to-4 DEMUX. Route a single data input D to one of four outputs (Y0–Y3) determined by the 2-bit select lines S1 and S0.",
+    truthTable: [
+      // D=0 → all outputs 0 regardless of select
+      { D: 0, S1: 0, S0: 0, Y0: 0, Y1: 0, Y2: 0, Y3: 0 },
+      { D: 0, S1: 0, S0: 1, Y0: 0, Y1: 0, Y2: 0, Y3: 0 },
+      { D: 0, S1: 1, S0: 0, Y0: 0, Y1: 0, Y2: 0, Y3: 0 },
+      { D: 0, S1: 1, S0: 1, Y0: 0, Y1: 0, Y2: 0, Y3: 0 },
+      // D=1 → selected output = 1, rest = 0
+      { D: 1, S1: 0, S0: 0, Y0: 1, Y1: 0, Y2: 0, Y3: 0 }, // S1S0=00 → Y0
+      { D: 1, S1: 0, S0: 1, Y0: 0, Y1: 1, Y2: 0, Y3: 0 }, // S1S0=01 → Y1
+      { D: 1, S1: 1, S0: 0, Y0: 0, Y1: 0, Y2: 1, Y3: 0 }, // S1S0=10 → Y2
+      { D: 1, S1: 1, S0: 1, Y0: 0, Y1: 0, Y2: 0, Y3: 1 }, // S1S0=11 → Y3
+    ],
+    equations: [
+      "Y0 = D · S1' · S0'",
+      "Y1 = D · S1' · S0",
+      "Y2 = D · S1  · S0'",
+      "Y3 = D · S1  · S0",
+    ],
+    hint: "Each output is a 3-input AND gate: the data line D, the required polarity of S1, and the required polarity of S0. Add NOT gates for the complemented select lines.",
+    inputs: ["D", "S1", "S0"],
+    outputs: ["Y0", "Y1", "Y2", "Y3"],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 10 — 1-to-8 Demultiplexer
+  // Inputs: D, S2, S1, S0  |  Outputs: Y0–Y7
+  // Yi = D when (S2,S1,S0) == i, else 0
+  // 2^4 = 16 rows — complete ✓
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    id: 12,
+    title: "1-to-8 Demultiplexer",
+    difficulty: "Hard",
+    tags: ["Combinational", "Decoder"],
+    description:
+      "Build a 1-to-8 DEMUX. Route a single data input D to one of eight outputs (Y0–Y7) based on the 3-bit select address formed by S2, S1, and S0.",
+    truthTable: [
+      // D=0 → all outputs 0
+      {
+        D: 0,
+        S2: 0,
+        S1: 0,
+        S0: 0,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      },
+      {
+        D: 0,
+        S2: 0,
+        S1: 0,
+        S0: 1,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      },
+      {
+        D: 0,
+        S2: 0,
+        S1: 1,
+        S0: 0,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      },
+      {
+        D: 0,
+        S2: 0,
+        S1: 1,
+        S0: 1,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      },
+      {
+        D: 0,
+        S2: 1,
+        S1: 0,
+        S0: 0,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      },
+      {
+        D: 0,
+        S2: 1,
+        S1: 0,
+        S0: 1,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      },
+      {
+        D: 0,
+        S2: 1,
+        S1: 1,
+        S0: 0,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      },
+      {
+        D: 0,
+        S2: 1,
+        S1: 1,
+        S0: 1,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      },
+      // D=1 → selected output = 1, rest = 0
+      {
+        D: 1,
+        S2: 0,
+        S1: 0,
+        S0: 0,
+        Y0: 1,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      }, // 000 → Y0
+      {
+        D: 1,
+        S2: 0,
+        S1: 0,
+        S0: 1,
+        Y0: 0,
+        Y1: 1,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      }, // 001 → Y1
+      {
+        D: 1,
+        S2: 0,
+        S1: 1,
+        S0: 0,
+        Y0: 0,
+        Y1: 0,
+        Y2: 1,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      }, // 010 → Y2
+      {
+        D: 1,
+        S2: 0,
+        S1: 1,
+        S0: 1,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 1,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      }, // 011 → Y3
+      {
+        D: 1,
+        S2: 1,
+        S1: 0,
+        S0: 0,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 1,
+        Y5: 0,
+        Y6: 0,
+        Y7: 0,
+      }, // 100 → Y4
+      {
+        D: 1,
+        S2: 1,
+        S1: 0,
+        S0: 1,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 1,
+        Y6: 0,
+        Y7: 0,
+      }, // 101 → Y5
+      {
+        D: 1,
+        S2: 1,
+        S1: 1,
+        S0: 0,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 1,
+        Y7: 0,
+      }, // 110 → Y6
+      {
+        D: 1,
+        S2: 1,
+        S1: 1,
+        S0: 1,
+        Y0: 0,
+        Y1: 0,
+        Y2: 0,
+        Y3: 0,
+        Y4: 0,
+        Y5: 0,
+        Y6: 0,
+        Y7: 1,
+      }, // 111 → Y7
+    ],
+    equations: [
+      "Y0 = D · S2' · S1' · S0'",
+      "Y1 = D · S2' · S1' · S0",
+      "Y2 = D · S2' · S1  · S0'",
+      "Y3 = D · S2' · S1  · S0",
+      "Y4 = D · S2  · S1' · S0'",
+      "Y5 = D · S2  · S1' · S0",
+      "Y6 = D · S2  · S1  · S0'",
+      "Y7 = D · S2  · S1  · S0",
+    ],
+    hint: "Eight 4-input AND gates — one per output. Each AND gate takes D, and the correct polarity of S2, S1, S0 for that output index. Add NOT gates for all three select complements.",
+    inputs: ["D", "S2", "S1", "S0"],
+    outputs: ["Y0", "Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7"],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 13 — SR NOR Latch (Basic SR Latch)
+  // Inputs: S, R  |  Outputs: Q, Qb
+  // Built from two cross-coupled NOR gates.
+  // Forbidden state: S=1, R=1 (excluded from truth table).
+  // Truth table covers: Reset (S=0,R=1), Set (S=1,R=0), and Hold (S=0,R=0)
+  // with both initial Q states where relevant.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    id: 13,
+    title: "SR NOR Latch",
+    difficulty: "Medium",
+    tags: ["Sequential", "Latch"],
+    description:
+      "Design a basic SR latch using two cross-coupled NOR gates. " +
+      "Input S (Set) drives Q high; input R (Reset) drives Q low. " +
+      "When both S and R are 0 the latch holds its previous state. " +
+      "The input combination S=1, R=1 is forbidden and is not tested.",
+    // Truth table: only the valid, non-forbidden rows.
+    // For the Hold state (S=0, R=0) we test both Q=0→0 and Q=1→1.
+    truthTable: [
+      // Reset: R=1, S=0 → Q=0, Qb=1 (regardless of previous Q)
+      { S: 0, R: 1, Q: 0, Qb: 1 },
+      // Set:   S=1, R=0 → Q=1, Qb=0 (regardless of previous Q)
+      { S: 1, R: 0, Q: 1, Qb: 0 },
+      // Hold (after Reset): S=0, R=0 → Q stays 0
+      { S: 0, R: 0, Q: 0, Qb: 1 },
+      // Hold (after Set):   S=0, R=0 → Q stays 1
+      { S: 0, R: 0, Q: 1, Qb: 0 },
+    ],
+    equations: ["Q  = (R + Qb)'   [upper NOR]", "Qb = (S + Q)'    [lower NOR]"],
+    hint: "Place two NOR gates. Feed R and Qb into the top NOR to get Q; feed S and Q into the bottom NOR to get Qb. The cross-coupling (Q → lower NOR, Qb → upper NOR) creates the memory.",
+    inputs: ["S", "R"],
+    outputs: ["Q", "Qb"],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 14 — SR NAND Latch (Active-Low SR Latch)
+  // Inputs: S_n (S̄), R_n (R̄)  |  Outputs: Q, Qb
+  // Built from two cross-coupled NAND gates.
+  // Inputs are active-low: assert by pulling to 0.
+  // Forbidden state: S_n=0, R_n=0 (excluded from truth table).
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    id: 14,
+    title: "SR NAND Latch",
+    difficulty: "Medium",
+    tags: ["Sequential", "Latch"],
+    description:
+      "Build an SR latch using two cross-coupled NAND gates. " +
+      "The inputs are active-low: S_n=0 sets Q=1; R_n=0 resets Q=0. " +
+      "When both inputs are 1 the latch holds its state. " +
+      "The combination S_n=0 and R_n=0 is forbidden and is not tested.",
+    truthTable: [
+      // Set: S_n=0, R_n=1 → Q=1, Qb=0
+      { S_n: 0, R_n: 1, Q: 1, Qb: 0 },
+      // Reset: S_n=1, R_n=0 → Q=0, Qb=1
+      { S_n: 1, R_n: 0, Q: 0, Qb: 1 },
+      // Hold (Q=1): S_n=1, R_n=1 → Q stays 1
+      { S_n: 1, R_n: 1, Q: 1, Qb: 0 },
+      // Hold (Q=0): S_n=1, R_n=1 → Q stays 0
+      { S_n: 1, R_n: 1, Q: 0, Qb: 1 },
+    ],
+    equations: [
+      "Q  = (S_n · Qb)'  [upper NAND]",
+      "Qb = (R_n · Q)'   [lower NAND]",
+    ],
+    hint: "Place two NAND gates. The top NAND receives S_n and Qb and produces Q; the bottom NAND receives R_n and Q and produces Qb. Because NAND is used the inputs are active-low — a 0 asserts the action.",
+    inputs: ["S_n", "R_n"],
+    outputs: ["Q", "Qb"],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 15 — Gated SR Latch (SR Latch with Enable)
+  // Inputs: S, R, En  |  Outputs: Q, Qb
+  // The SR NOR latch is gated by an Enable (clock) signal.
+  // When En=0 the latch holds regardless of S and R.
+  // When En=1 it behaves as a normal SR latch (S=R=1 still forbidden).
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    id: 15,
+    title: "Gated SR Latch",
+    difficulty: "Medium",
+    tags: ["Sequential", "Latch"],
+    description:
+      "Extend the basic SR latch with an Enable (En) control input. " +
+      "When En=0 the latch ignores S and R and holds its current state. " +
+      "When En=1 it behaves as a normal SR NOR latch: S sets Q, R resets Q, " +
+      "and S=R=0 holds. The combination En=1, S=1, R=1 is forbidden.",
+    truthTable: [
+      // En=0 → Hold regardless of S, R (show one representative Q=0 and Q=1)
+      { En: 0, S: 0, R: 0, Q: 0, Qb: 1 },
+      { En: 0, S: 0, R: 0, Q: 1, Qb: 0 },
+      { En: 0, S: 1, R: 0, Q: 0, Qb: 1 },
+      { En: 0, S: 1, R: 0, Q: 1, Qb: 0 },
+      { En: 0, S: 0, R: 1, Q: 0, Qb: 1 },
+      { En: 0, S: 0, R: 1, Q: 1, Qb: 0 },
+      // En=1, S=0, R=0 → Hold
+      { En: 1, S: 0, R: 0, Q: 0, Qb: 1 },
+      { En: 1, S: 0, R: 0, Q: 1, Qb: 0 },
+      // En=1, S=1, R=0 → Set  (Q=1)
+      { En: 1, S: 1, R: 0, Q: 1, Qb: 0 },
+      // En=1, S=0, R=1 → Reset (Q=0)
+      { En: 1, S: 0, R: 1, Q: 0, Qb: 1 },
+    ],
+    equations: [
+      "S_int = S · En",
+      "R_int = R · En",
+      "Q  = (R_int + Qb)'",
+      "Qb = (S_int + Q)'",
+    ],
+    hint: "Add two AND gates before the NOR latch: one gates S through En (S_int = S·En), the other gates R through En (R_int = R·En). Feed S_int and R_int into the standard SR NOR latch.",
+    inputs: ["En", "S", "R"],
+    outputs: ["Q", "Qb"],
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Problem 16 — D Latch (Transparent Latch)
+  // Inputs: D, En  |  Outputs: Q, Qb
+  // Eliminates the forbidden state of the SR latch by forcing R = D'.
+  // When En=1 (transparent): Q follows D immediately.
+  // When En=0 (hold):        Q retains its last value.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    id: 16,
+    title: "D Latch",
+    difficulty: "Easy",
+    tags: ["Sequential", "Latch"],
+    description:
+      "Design a D (Data / Transparent) latch. " +
+      "When Enable (En) is 1 the output Q transparently follows the data input D. " +
+      "When En goes to 0 the latch freezes and Q holds its last value. " +
+      "There is no forbidden input combination.",
+    truthTable: [
+      // En=1 (transparent): Q = D
+      { En: 1, D: 0, Q: 0, Qb: 1 },
+      { En: 1, D: 1, Q: 1, Qb: 0 },
+      // En=0 (hold): Q keeps previous value
+      { En: 0, D: 0, Q: 0, Qb: 1 }, // previous Q was 0
+      { En: 0, D: 0, Q: 1, Qb: 0 }, // previous Q was 1
+      { En: 0, D: 1, Q: 0, Qb: 1 }, // previous Q was 0
+      { En: 0, D: 1, Q: 1, Qb: 0 }, // previous Q was 1
+    ],
+    equations: ["S = D · En", "R = D' · En", "Q  = (R + Qb)'", "Qb = (S + Q)'"],
+    hint: "Use a NOT gate to create D'. Then AND D with En to get S, and AND D' with En to get R. Wire S and R into a standard SR NOR latch. Because R is always D' the forbidden state (S=R=1) can never occur.",
+    inputs: ["En", "D"],
+    outputs: ["Q", "Qb"],
+  },
 ];
 
 export default problemsData;

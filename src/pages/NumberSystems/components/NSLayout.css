@@ -161,8 +161,18 @@
 .ns-bg-2 {
   inset: 0;
   background:
-    linear-gradient(115deg, transparent 0 26%, rgba(20, 184, 166, 0.08) 26% 27%, transparent 27% 100%),
-    linear-gradient(245deg, transparent 0 58%, rgba(251, 191, 36, 0.055) 58% 59%, transparent 59% 100%);
+    linear-gradient(
+      115deg,
+      transparent 0 26%,
+      rgba(20, 184, 166, 0.08) 26% 27%,
+      transparent 27% 100%
+    ),
+    linear-gradient(
+      245deg,
+      transparent 0 58%,
+      rgba(251, 191, 36, 0.055) 58% 59%,
+      transparent 59% 100%
+    );
   opacity: 0.8;
 }
 
@@ -211,8 +221,18 @@
 .ns-layout .afhdl-bg-2 {
   inset: 0;
   background:
-    linear-gradient(115deg, transparent 0 26%, rgba(20, 184, 166, 0.08) 26% 27%, transparent 27% 100%),
-    linear-gradient(245deg, transparent 0 58%, rgba(251, 191, 36, 0.055) 58% 59%, transparent 59% 100%);
+    linear-gradient(
+      115deg,
+      transparent 0 26%,
+      rgba(20, 184, 166, 0.08) 26% 27%,
+      transparent 27% 100%
+    ),
+    linear-gradient(
+      245deg,
+      transparent 0 58%,
+      rgba(251, 191, 36, 0.055) 58% 59%,
+      transparent 59% 100%
+    );
   opacity: 0.85;
 }
 
@@ -275,8 +295,16 @@
 
 .ns-layout .afhdl-hero::before {
   background:
-    radial-gradient(ellipse at 0% 0%, rgba(20, 184, 166, 0.18), transparent 48%),
-    radial-gradient(ellipse at 100% 20%, rgba(167, 139, 250, 0.14), transparent 42%),
+    radial-gradient(
+      ellipse at 0% 0%,
+      rgba(20, 184, 166, 0.18),
+      transparent 48%
+    ),
+    radial-gradient(
+      ellipse at 100% 20%,
+      rgba(167, 139, 250, 0.14),
+      transparent 42%
+    ),
     linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 60%);
 }
 
@@ -335,7 +363,12 @@
 }
 
 .ns-layout .afhdl-sidebar-progress-fill {
-  background: linear-gradient(90deg, var(--ns-teal-500), var(--ns-cyan), var(--ns-violet));
+  background: linear-gradient(
+    90deg,
+    var(--ns-teal-500),
+    var(--ns-cyan),
+    var(--ns-violet)
+  );
   box-shadow: var(--ns-shadow-teal);
 }
 
@@ -1686,6 +1719,7 @@
 .ns-layout .converter-card,
 .ns-layout .binary-card,
 .ns-layout .explanation-section {
+  margin: 17px 0;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 42%),
     var(--ns-surface-1);
@@ -1785,7 +1819,9 @@
   outline: none;
   background: var(--ns-surface-2);
   border-color: var(--ns-teal-400);
-  box-shadow: 0 0 0 3px var(--ns-teal-soft), var(--ns-shadow-teal);
+  box-shadow:
+    0 0 0 3px var(--ns-teal-soft),
+    var(--ns-shadow-teal);
 }
 
 .ns-layout .converter-input::placeholder,
@@ -1892,7 +1928,7 @@
 
 /* ── Binary representation / bit converter custom classes ─── */
 .ns-layout .binary-wrapper {
-  display: grid;
+  /* display: grid; */
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.25rem;
 }
@@ -2021,12 +2057,15 @@
 
 .ns-layout .binary-select {
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, var(--ns-text-muted) 50%),
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ns-text-muted) 50%),
     linear-gradient(135deg, var(--ns-text-muted) 50%, transparent 50%);
   background-position:
     calc(100% - 17px) 52%,
     calc(100% - 12px) 52%;
-  background-size: 5px 5px, 5px 5px;
+  background-size:
+    5px 5px,
+    5px 5px;
   background-repeat: no-repeat;
   padding-right: 2.25rem;
 }

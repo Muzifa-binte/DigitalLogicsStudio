@@ -1192,3 +1192,96 @@
     transition: none;
   }
 }
+/* ═══════════════════════════════════════════════════════════════
+   Mark-as-Read additions — append to the bottom of BALayout.css
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Footer right group: Mark as Read + Next side by side ───── */
+.ba-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ── Mark as Read button ─────────────────────────────────────── */
+.ba-mark-read-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(196, 181, 253, 0.3);
+  background: rgba(139, 92, 246, 0.07);
+  color: #c4b5fd;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    transform 150ms ease;
+}
+
+.ba-mark-read-btn:hover {
+  background: rgba(139, 92, 246, 0.18);
+  border-color: #c4b5fd;
+  transform: translateY(-1px);
+}
+
+.ba-mark-read-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Read / checked state ────────────────────────────────────── */
+.ba-mark-read-btn.is-read {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: #a78bfa;
+  color: #a78bfa;
+}
+
+.ba-mark-read-btn.is-read svg {
+  filter: drop-shadow(0 0 3px rgba(167, 139, 250, 0.55));
+}
+
+/* ── Sidebar: read item ──────────────────────────────────────── */
+.ba-nav-item.is-read .ba-nav-check {
+  color: #a78bfa;
+}
+
+.ba-nav-item.is-read .ba-nav-label {
+  color: #c4b5fd;
+  opacity: 0.8;
+}
+
+/* ── Light theme ─────────────────────────────────────────────── */
+[data-theme="light"] .ba-mark-read-btn {
+  border-color: rgba(109, 40, 217, 0.28);
+  background: rgba(109, 40, 217, 0.05);
+  color: #6d28d9;
+}
+
+[data-theme="light"] .ba-mark-read-btn:hover {
+  background: rgba(109, 40, 217, 0.13);
+  border-color: #6d28d9;
+}
+
+[data-theme="light"] .ba-mark-read-btn.is-read {
+  background: rgba(109, 40, 217, 0.15);
+  border-color: #7c3aed;
+  color: #5b21b6;
+}
+
+[data-theme="light"] .ba-nav-item.is-read .ba-nav-check {
+  color: #7c3aed;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ba-mark-read-btn {
+    transition: none;
+  }
+}

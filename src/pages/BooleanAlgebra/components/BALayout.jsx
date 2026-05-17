@@ -1,10 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Home } from "lucide-react";
 import { useTheme } from "../../../context/ThemeContext";
+import { useAuth } from "../../../context/AuthContext";
+import progressService from "../../../services/progressService";
 import "./BALayout.css";
 import { baPages } from "./baConfig";
 
+// ── Subtopic ID map: page path → id used in coreTopics.js ─────────────────
+// Must match the `id` values in src/data/coreTopics.js > boolean-algebra.links
+const PATH_TO_SUBTOPIC_ID = {
+  "/boolean/overview": "overview",
+  "/boolean/identities": "identities",
+  "/boolean/laws": "laws",
+  "/boolean/duality": "duality",
+  "/boolean/consensus": "consensus",
+  "/boolean/complement": "complement",
+  "/boolean/minterms": "minterms",
+  "/boolean/maxterms": "maxterms",
+  "/boolean/minterms-maxterms": "relation",
+  "/boolean/significant-digits": "significant-digits",
+};
+
+// Minimal topic descriptor — mirrors coreTopics.js so progressService can
+// recalculate completion percentages correctly.
+const BA_TOPIC = {
+  id: "boolean-algebra",
+  title: "BOOLEAN ALGEBRA",
+  links: Object.values(PATH_TO_SUBTOPIC_ID).map((id) => ({ id })),
+};
+
+const CATALOG = { topics: [BA_TOPIC], problems: [] };
+
+// ── Icons ──────────────────────────────────────────────────────────────────
 function SunIcon() {
   return (
     <svg
@@ -49,21 +77,87 @@ function MoonIcon() {
   );
 }
 
+function CheckCircleIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="9 12 11 14 15 10" />
+    </svg>
+  );
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function getCompletedSubtopics(userKey) {
+  const snap = progressService.getSnapshot(userKey, CATALOG);
+  return snap.state.topics?.["boolean-algebra"]?.completedSubtopics || [];
+}
+
+// ── Component ──────────────────────────────────────────────────────────────
 const BALayout = ({ title, subtitle, intro, highlights = [], children }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { theme, toggle: toggleTheme } = useTheme();
+  const { user } = useAuth();
 
-  const currentIndex = baPages.findIndex(
-    (page) => page.path === location.pathname,
+  const currentPath = location.pathname;
+  const currentIndex = baPages.findIndex((p) => p.path === currentPath);
+  const subtopicId = PATH_TO_SUBTOPIC_ID[currentPath] || null;
+  const userKey = progressService.getUserKey(user);
+
+  // ── Derive read state from progressService cache ───────────────────────
+  const [completedSubtopics, setCompletedSubtopics] = useState(() =>
+    getCompletedSubtopics(userKey),
   );
+
+  // Refresh when path or user changes (e.g. navigating between pages)
+  useEffect(() => {
+    setCompletedSubtopics(getCompletedSubtopics(userKey));
+  }, [currentPath, userKey]);
+
+  const isRead = subtopicId ? completedSubtopics.includes(subtopicId) : false;
+
+  const toggleRead = useCallback(async () => {
+    if (!subtopicId) return;
+    // Optimistic update so the UI feels instant
+    setCompletedSubtopics((prev) =>
+      prev.includes(subtopicId)
+        ? prev.filter((id) => id !== subtopicId)
+        : [...prev, subtopicId],
+    );
+    // Delegate to progressService — same function the homepage pill uses,
+    // so both stay in sync through the shared in-memory cache + backend.
+    await progressService.toggleSubtopicCompleted(
+      userKey,
+      BA_TOPIC,
+      subtopicId,
+      CATALOG,
+    );
+    // Reconcile with the real cache value after the async write
+    setCompletedSubtopics(getCompletedSubtopics(userKey));
+  }, [subtopicId, userKey]);
+
+  // ── Progress ring ──────────────────────────────────────────────────────
+  const readCount = completedSubtopics.filter((sid) =>
+    Object.values(PATH_TO_SUBTOPIC_ID).includes(sid),
+  ).length;
+  const progress = Math.round((readCount / baPages.length) * 100);
+  const progressDash = progress * 0.879;
+
   const prev = currentIndex > 0 ? baPages[currentIndex - 1] : null;
   const next =
     currentIndex >= 0 && currentIndex < baPages.length - 1
       ? baPages[currentIndex + 1]
       : null;
-  const progress = Math.round(((currentIndex + 1) / baPages.length) * 100);
-  const progressDash = progress * 0.879;
 
   return (
     <div className="ba-layout">
@@ -108,7 +202,7 @@ const BALayout = ({ title, subtitle, intro, highlights = [], children }) => {
           </button>
           <div
             className="ba-progress-ring-wrap"
-            title={`${currentIndex + 1} of ${baPages.length}`}
+            title={`${readCount} of ${baPages.length} read`}
           >
             <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
               <circle
@@ -133,7 +227,7 @@ const BALayout = ({ title, subtitle, intro, highlights = [], children }) => {
               />
             </svg>
             <span className="ba-progress-text">
-              {currentIndex + 1}/{baPages.length}
+              {readCount}/{baPages.length}
             </span>
           </div>
         </div>
@@ -168,36 +262,42 @@ const BALayout = ({ title, subtitle, intro, highlights = [], children }) => {
                 />
               </div>
               <span className="ba-sidebar-progress-label">
-                {progress}% complete
+                {progress}% read
               </span>
             </div>
 
             <nav className="ba-sidebar-nav">
-              {baPages.map((page, index) => (
-                <NavLink
-                  key={page.path}
-                  to={page.path}
-                  className={({ isActive }) =>
-                    `ba-nav-item${isActive ? " is-active" : ""}${index < currentIndex ? " is-visited" : ""}`
-                  }
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="ba-nav-index">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <span className="ba-nav-copy">
-                    <span className="ba-nav-label">{page.label}</span>
-                    <span className="ba-nav-description">
-                      {page.description}
+              {baPages.map((page, index) => {
+                const sid = PATH_TO_SUBTOPIC_ID[page.path];
+                const pageRead = sid ? completedSubtopics.includes(sid) : false;
+                return (
+                  <NavLink
+                    key={page.path}
+                    to={page.path}
+                    className={({ isActive }) =>
+                      `ba-nav-item${isActive ? " is-active" : ""}${pageRead ? " is-read" : ""}`
+                    }
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <span className="ba-nav-index">
+                      {String(index + 1).padStart(2, "0")}
                     </span>
-                  </span>
-                  <span className="ba-nav-status">
-                    {index < currentIndex && (
-                      <span className="ba-nav-check">✓</span>
-                    )}
-                  </span>
-                </NavLink>
-              ))}
+                    <span className="ba-nav-copy">
+                      <span className="ba-nav-label">{page.label}</span>
+                      <span className="ba-nav-description">
+                        {page.description}
+                      </span>
+                    </span>
+                    <span className="ba-nav-status">
+                      {pageRead && (
+                        <span className="ba-nav-check" title="Read">
+                          ✓
+                        </span>
+                      )}
+                    </span>
+                  </NavLink>
+                );
+              })}
             </nav>
 
             <div className="ba-sidebar-footer">
@@ -242,20 +342,26 @@ const BALayout = ({ title, subtitle, intro, highlights = [], children }) => {
             ) : null}
 
             <div className="ba-chapter-dots">
-              {baPages.map((p, i) => (
-                <Link
-                  key={p.path}
-                  to={p.path}
-                  className={`ba-dot${i === currentIndex ? " active" : ""}${i < currentIndex ? " done" : ""}`}
-                  title={p.label}
-                />
-              ))}
+              {baPages.map((p, i) => {
+                const sid = PATH_TO_SUBTOPIC_ID[p.path];
+                const done = sid ? completedSubtopics.includes(sid) : false;
+                return (
+                  <Link
+                    key={p.path}
+                    to={p.path}
+                    className={`ba-dot${i === currentIndex ? " active" : ""}${done ? " done" : ""}`}
+                    title={p.label}
+                  />
+                );
+              })}
             </div>
           </section>
 
           <div className="ba-content">{children}</div>
 
+          {/* ── FOOTER NAV ────────────────────────────────────── */}
           <footer className="ba-footer-nav">
+            {/* ← Previous */}
             {prev ? (
               <NavLink to={prev.path} className="ba-footer-link">
                 <span className="ba-footer-arrow">
@@ -284,44 +390,59 @@ const BALayout = ({ title, subtitle, intro, highlights = [], children }) => {
               <div />
             )}
 
-            {next ? (
-              <NavLink
-                to={next.path}
-                className="ba-footer-link ba-footer-link-next"
-              >
-                <span>
-                  <span className="ba-footer-label">Next</span>
-                  <span className="ba-footer-title">{next.label}</span>
-                </span>
-                <span className="ba-footer-arrow ba-footer-arrow-next">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M7 5l5 5-5 5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </NavLink>
-            ) : (
-              <Link to="/" className="ba-footer-link ba-footer-link-next">
-                <span>
-                  <span className="ba-footer-label">All done!</span>
-                  <span className="ba-footer-title">Return to Home</span>
-                </span>
-                <span className="ba-footer-arrow ba-footer-arrow-next">
-                  <Home size={16} aria-hidden="true" />
-                </span>
-              </Link>
-            )}
+            {/* Mark as Read + Next →  grouped on the right */}
+            <div className="ba-footer-right">
+              {subtopicId && (
+                <button
+                  className={`ba-mark-read-btn${isRead ? " is-read" : ""}`}
+                  onClick={toggleRead}
+                  aria-pressed={isRead}
+                  aria-label={isRead ? "Mark as unread" : "Mark as read"}
+                >
+                  <CheckCircleIcon />
+                  <span>{isRead ? "Marked as Read" : "Mark as Read"}</span>
+                </button>
+              )}
+
+              {next ? (
+                <NavLink
+                  to={next.path}
+                  className="ba-footer-link ba-footer-link-next"
+                >
+                  <span>
+                    <span className="ba-footer-label">Next</span>
+                    <span className="ba-footer-title">{next.label}</span>
+                  </span>
+                  <span className="ba-footer-arrow ba-footer-arrow-next">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M7 5l5 5-5 5"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                </NavLink>
+              ) : (
+                <Link to="/" className="ba-footer-link ba-footer-link-next">
+                  <span>
+                    <span className="ba-footer-label">All done!</span>
+                    <span className="ba-footer-title">Return to Home</span>
+                  </span>
+                  <span className="ba-footer-arrow ba-footer-arrow-next">
+                    <Home size={16} aria-hidden="true" />
+                  </span>
+                </Link>
+              )}
+            </div>
           </footer>
         </main>
       </div>

@@ -149,9 +149,15 @@ const BooleanIdentities = () => {
         <div className="ba-section-header">
           <h2 className="ba-section-title">The Nine Core Identities</h2>
         </div>
-        <div className="identity-grid">
+        <div>
           {identities.map((id) => (
-            <div key={id.name} className="identity-card">
+            <div
+              key={id.name}
+              style={{
+                margin: "15px auto",
+              }}
+              className="identity-card"
+            >
               <h3 className="explanation-title">{id.name}</h3>
               <p className="explanation-intro">{id.explanation}</p>
               <div className="binary-table-container">

@@ -585,17 +585,19 @@
   top: var(--ns-topbar-height);
   height: calc(100vh - var(--ns-topbar-height));
   scrollbar-width: thin;
-  scrollbar-color: var(--ns-teal-border) transparent;
+  scrollbar-color: rgba(96, 165, 250, 0.46) transparent;
 }
 .ns-sidebar::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
 }
 .ns-sidebar::-webkit-scrollbar-track {
   background: transparent;
 }
 .ns-sidebar::-webkit-scrollbar-thumb {
-  background: var(--ns-teal-border);
-  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(147, 197, 253, 0.62), rgba(37, 99, 235, 0.34));
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
 }
 
 .ns-sidebar-inner {
@@ -1928,13 +1930,21 @@
 
 /* ── Binary representation / bit converter custom classes ─── */
 .ns-layout .binary-wrapper {
-  /* display: grid; */
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 1.25rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .ns-layout .binary-card {
+  width: 100%;
+  min-width: 0;
   padding: clamp(1.15rem, 2vw, 1.55rem);
+}
+
+.ns-layout .binary-overview-card {
+  margin-bottom: 1.25rem;
 }
 
 .ns-layout .binary-section-title {
@@ -1945,6 +1955,8 @@
   color: var(--ns-text-hi);
   font-size: 1rem;
   letter-spacing: 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .ns-layout .binary-dot {
@@ -1983,6 +1995,7 @@
 }
 
 .ns-layout .binary-info-box {
+  min-width: 0;
   background: var(--ns-surface-0);
   border: 1px solid var(--ns-border);
   border-radius: var(--ns-radius-lg);
@@ -2021,6 +2034,7 @@
 }
 
 .ns-layout .binary-example-box {
+  min-width: 0;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid var(--ns-border-sep);
   border-radius: var(--ns-radius-md);
@@ -2032,11 +2046,57 @@
   padding-left: 1.15rem;
   color: var(--ns-text-muted);
   line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.ns-layout .binary-concept-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.ns-layout .binary-concept-card {
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  background: var(--ns-surface-0);
+  border: 1px solid var(--ns-border);
+  border-radius: var(--ns-radius-md);
+}
+
+.ns-layout .binary-concept-card p {
+  margin: 0.35rem 0 0;
+  color: var(--ns-text-muted);
+  line-height: 1.55;
+  font-size: 0.86rem;
+}
+
+.ns-layout .binary-concept-label {
+  color: var(--ns-text-hi);
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ns-layout .binary-callout {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  color: var(--ns-text-base);
+  line-height: 1.65;
+  background:
+    linear-gradient(90deg, rgba(45, 212, 191, 0.1), transparent 54%),
+    var(--ns-surface-0);
+  border: 1px solid var(--ns-teal-border);
+  border-left: 3px solid var(--ns-teal-400);
+  border-radius: 0 var(--ns-radius-md) var(--ns-radius-md) 0;
+  overflow-wrap: anywhere;
 }
 
 .ns-layout .binary-controls-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 0.85rem;
 }
 
@@ -2086,6 +2146,7 @@
 
 .ns-layout .binary-result,
 .ns-layout .binary-result-box {
+  min-width: 0;
   margin-top: 0.9rem;
   background: rgba(20, 184, 166, 0.08);
   border: 1px solid var(--ns-teal-border);
@@ -2096,6 +2157,7 @@
 
 .ns-layout .binary-result p {
   margin: 0.35rem 0;
+  overflow-wrap: anywhere;
 }
 
 .ns-layout .binary-bits-display,
@@ -2127,14 +2189,17 @@
 
 .ns-layout .binary-table-container {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   border: 1px solid var(--ns-border);
   border-radius: var(--ns-radius-md);
   background: var(--ns-surface-0);
+  -webkit-overflow-scrolling: touch;
 }
 
 .ns-layout .binary-table {
-  min-width: 520px;
+  width: 100%;
+  min-width: 32rem;
 }
 
 .ns-layout .binary-table-category {
@@ -2198,7 +2263,7 @@
   position: relative;
   animation: ns-slide-up 0.24s var(--ns-ease-out) both;
   scrollbar-width: thin;
-  scrollbar-color: var(--ns-teal-border) transparent;
+  scrollbar-color: rgba(96, 165, 250, 0.46) transparent;
 }
 
 .ns-layout .modal-content::-webkit-scrollbar {
@@ -2210,8 +2275,10 @@
 }
 
 .ns-layout .modal-content::-webkit-scrollbar-thumb {
-  background: var(--ns-teal-border);
+  background: linear-gradient(180deg, rgba(147, 197, 253, 0.62), rgba(37, 99, 235, 0.34));
+  border: 2px solid transparent;
   border-radius: 999px;
+  background-clip: padding-box;
 }
 
 .ns-layout .modal-close {
@@ -2411,8 +2478,7 @@
     grid-template-columns: 1fr;
   }
 
-  .ns-layout .converter-grid,
-  .ns-layout .binary-wrapper {
+  .ns-layout .converter-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2422,10 +2488,6 @@
 
   .ns-layout .conversion-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .ns-layout .binary-controls-grid {
-    grid-template-columns: 1fr;
   }
 
   .ns-footer-nav {

@@ -24,6 +24,19 @@ const combinationalPages = [
   },
 ];
 
+const PATH_TO_SUBTOPIC_ID = {
+  "/encoder": "encoder",
+  "/decoder": "decoder",
+  "/mux": "mux",
+  "/demux": "demux",
+};
+
+const COMBINATIONAL_TOPIC = {
+  id: "combinational-circuits",
+  title: "COMBINATIONAL CIRCUITS",
+  links: Object.values(PATH_TO_SUBTOPIC_ID).map((id) => ({ id })),
+};
+
 const CombinationalLayout = ({
   title,
   subtitle,
@@ -42,6 +55,10 @@ const CombinationalLayout = ({
     sidebarCopy="Move through signal routing, encoding, decoding, and selection with one premium lesson framework."
     heroKicker="Combinational Circuits"
     progressVerb="complete"
+    tracking={{
+      topic: COMBINATIONAL_TOPIC,
+      pathToSubtopicId: PATH_TO_SUBTOPIC_ID,
+    }}
   >
     {children}
   </PremiumLearningShell>

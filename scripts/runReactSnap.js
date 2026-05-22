@@ -9,7 +9,9 @@ const routesPath = path.resolve(__dirname, "..", "react-snap-routes.json");
 const buildDir = path.resolve(__dirname, "..", "build");
 const defaultPort = Number.parseInt(process.env.PRERENDER_PORT || "45678", 10);
 const isVercel = Boolean(process.env.VERCEL);
-const requirePrerender = process.env.PRERENDER_REQUIRED !== "false";
+const requirePrerender = isVercel
+  ? process.env.PRERENDER_REQUIRED === "true"
+  : process.env.PRERENDER_REQUIRED !== "false";
 
 const loadIncludeRoutes = () => {
   if (!fs.existsSync(routesPath)) {
@@ -149,6 +151,13 @@ async function main() {
     );
   }
 
+  if (isVercel && !requirePrerender) {
+    console.warn(
+      "Vercel build detected. Skipping prerender because PRERENDER_REQUIRED is not set to 'true'.",
+    );
+    return;
+  }
+
   const include = loadIncludeRoutes();
   const concurrency = Math.max(
     1,
@@ -179,7 +188,9 @@ async function main() {
   try {
     for (let index = 0; index < include.length; index += concurrency) {
       const chunk = include.slice(index, index + concurrency);
-      await Promise.all(chunk.map((route) => prerenderRoute(browser, baseUrl, route)));
+      await Promise.all(
+        chunk.map((route) => prerenderRoute(browser, baseUrl, route)),
+      );
     }
 
     writeSpaFallbackFiles();

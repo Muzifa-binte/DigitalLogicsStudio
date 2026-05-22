@@ -93,6 +93,7 @@ const PremiumLearningShell = ({
   const { theme, toggle: toggleTheme } = useTheme();
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const currentPath = location.pathname;
   const currentIndex = pages.findIndex((page) => page.path === currentPath);
@@ -127,6 +128,19 @@ const PremiumLearningShell = ({
   useEffect(() => {
     setSidebarOpen(false);
   }, [currentPath]);
+
+  useEffect(() => {
+    const updateScrolledState = () => {
+      setIsScrolled(window.scrollY > 24);
+    };
+
+    updateScrolledState();
+    window.addEventListener("scroll", updateScrolledState, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", updateScrolledState);
+    };
+  }, []);
 
   useEffect(() => {
     setCompletedSubtopics(getCompletedSubtopics());
@@ -169,7 +183,9 @@ const PremiumLearningShell = ({
 
   return (
     <div
-      className={`afhdl-layout premium-topic-shell ${rootClassName}`.trim()}
+      className={`afhdl-layout premium-topic-shell ${rootClassName} ${
+        isScrolled ? "is-scrolled" : ""
+      }`.trim()}
       style={{ background: "var(--afhdl-bg)", color: "var(--afhdl-text)" }}
     >
       <div className="afhdl-bg afhdl-bg-1" />

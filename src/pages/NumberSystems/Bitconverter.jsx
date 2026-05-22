@@ -77,8 +77,8 @@ export default function BitConverter() {
               <div className="binary-example-box">
                 <ul className="binary-list">
                   <li><strong>1 Byte</strong> = 8 bits</li>
-                  <li><strong>Binary units</strong> use 1024 (2<sup>10</sup>) as base</li>
-                  <li><strong>Decimal units</strong> use 1000 (10<sup>3</sup>) as base</li>
+                  <li><strong>Binary units</strong> use 1024 (\(2^{10}\)) as base</li>
+                  <li><strong>Decimal units</strong> use 1000 (\(10^{3}\)) as base</li>
                   <li><strong>IEC standard:</strong> KB/MB/GB (binary) vs kB/mB/gB (decimal)</li>
                 </ul>
               </div>
@@ -166,7 +166,7 @@ export default function BitConverter() {
             <h3 className="binary-info-heading">Understanding Digital Storage Units</h3>
             <p className="binary-text">
               Digital storage uses <span className="binary-highlight-secondary">binary prefixes</span>{" "}
-              based on powers of 2. Each step up multiplies by 1024 (2<sup>10</sup>).
+              based on powers of 2. Each step up multiplies by 1024 (\(2^{10}\)).
             </p>
 
             <button className="binary-toggle-btn binary-toggle-btn-secondary" onClick={() => setShowTable(!showTable)}>
@@ -180,7 +180,7 @@ export default function BitConverter() {
                     <tr>
                       <th>Unit</th>
                       <th className="binary-table-cell-center">Symbol</th>
-                      <th className="binary-table-cell-center">2<sup>n</sup> Bits</th>
+                      <th className="binary-table-cell-center">{'\\(2^{n}\\) Bits'}</th>
                       <th className="binary-table-cell-right">Total Bits</th>
                     </tr>
                   </thead>
@@ -194,7 +194,7 @@ export default function BitConverter() {
                           <tr key={row.symbol} className="binary-table-row">
                             <td className="binary-table-cell">{row.unit}</td>
                             <td className="binary-table-cell binary-table-cell-center binary-table-cell-mono binary-table-cell-secondary">{row.symbol}</td>
-                            <td className="binary-table-cell binary-table-cell-center binary-table-cell-mono binary-table-cell-amber">2<sup>{row.power}</sup></td>
+                            <td className="binary-table-cell binary-table-cell-center binary-table-cell-mono binary-table-cell-amber">{`\\(2^{${row.power}}\\)`}</td>
                             <td className="binary-table-cell binary-table-cell-right binary-table-cell-mono binary-table-cell-primary">{formatNumber(row.bits)}</td>
                           </tr>
                         ))}
@@ -214,7 +214,7 @@ export default function BitConverter() {
                   <li><strong>1 MB</strong> = 1024 KB</li>
                   <li><strong>1 MB</strong> = 1,048,576 Bytes</li>
                   <li><strong>1 MB</strong> = <span className="binary-highlight-secondary">8,388,608 bits</span></li>
-                  <li><strong>Power:</strong> 2<sup>23</sup> bits</li>
+                  <li><strong>Power:</strong> \(2^{23}\) bits</li>
                 </ol>
               </div>
             </div>

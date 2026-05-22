@@ -270,10 +270,10 @@ export default function BinaryRepresentation() {
                         </p>
                         <div className="binary-example-box">
                             <p className="binary-formula">
-                                Range: -(2<sup>n-1</sup> - 1) to +(2<sup>n-1</sup> - 1)
+                                {'Range: \\(-(2^{n-1} - 1)\\) to \\(+(2^{n-1} - 1)\\)'}
                             </p>
                             <p className="binary-formula-note">
-                                Distinct bit patterns: 2<sup>n</sup>, but +0 and -0 both represent zero.
+                                {'Distinct bit patterns: \\(2^{n}\\), but +0 and -0 both represent zero.'}
                             </p>
                         </div>
                         <div className="binary-input-group">
@@ -310,7 +310,7 @@ export default function BinaryRepresentation() {
                         </p>
                         <p className="binary-text">
                             Two's complement is the standard way computers store signed integers. For positive values, write normal binary.
-                            For negative values, use the fixed bit width and wrap around from 2^n.
+                            {'For negative values, use the fixed bit width and wrap around from \\(2^{n}\\).'}
                         </p>
 
                         <button className="binary-toggle-btn" onClick={() => setShowTcChart(!showTcChart)}>
@@ -370,7 +370,7 @@ export default function BinaryRepresentation() {
                         </div>
 
                         <div className="binary-callout">
-                            Shortcut: in n bits, a negative number can also be found with 2^n - value. For -13 in 8 bits: 256 - 13 = 243, and 243 is 11110011.
+                            {'Shortcut: in n bits, a negative number can also be found with \\(2^{n} - \\text{value}\\). For -13 in 8 bits: 256 - 13 = 243, and 243 is 11110011.'}
                         </div>
                     </div>
 
@@ -416,10 +416,10 @@ export default function BinaryRepresentation() {
                         </p>
                         <div className="binary-example-box">
                             <p className="binary-formula">
-                                Range: -2<sup>n-1</sup> to +(2<sup>n-1</sup> - 1)
+                                {'Range: \\(-2^{n-1}\\) to \\(+(2^{n-1} - 1)\\)'}
                             </p>
                             <p className="binary-formula-note">
-                                Distinct values: 2<sup>n</sup>.
+                                {'Distinct values: \\(2^{n}\\).'}
                             </p>
                         </div>
                         <div className="binary-input-group">
@@ -480,7 +480,7 @@ export default function BinaryRepresentation() {
                         </div>
 
                         <div className="binary-callout">
-                            With n bits, unsigned range is 0 to 2^n - 1. With 8 bits, that is 0 to 255.
+                            {'With n bits, unsigned range is \\(0\\) to \\(2^{n} - 1\\). With 8 bits, that is 0 to 255.'}
                         </div>
                     </div>
 
@@ -491,10 +491,10 @@ export default function BinaryRepresentation() {
                         </p>
                         <div className="binary-example-box">
                             <p className="binary-formula">
-                                Range: 0 to 2<sup>n</sup> - 1
+                                {'Range: \\(0\\) to \\(2^{n} - 1\\)'}
                             </p>
                             <p className="binary-formula-note">
-                                Distinct values: 2<sup>n</sup>.
+                                {'Distinct values: \\(2^{n}\\).'}
                             </p>
                         </div>
                         <div className="binary-input-group">

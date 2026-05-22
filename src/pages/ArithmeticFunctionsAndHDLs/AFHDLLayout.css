@@ -977,8 +977,14 @@
    RESPONSIVE BREAKPOINTS
 ══════════════════════════════════════════════════════════════ */
 
-/* Desktop: show sidebar permanently beside content */
-@media (min-width: 900px) {
+/* Wide desktop: show sidebar permanently beside content */
+@media (min-width: 1280px) {
+  .afhdl-hamburger {
+    display: none;
+  }
+  .afhdl-overlay {
+    display: none;
+  }
   .afhdl-body {
     padding-left: var(--afhdl-sidebar-width);
   }
@@ -998,6 +1004,16 @@
   }
   .afhdl-category-pill {
     font-size: 0.92rem;
+  }
+}
+
+/* Laptop and tablet: keep navigation off-canvas so the hamburger is useful */
+@media (max-width: 1279px) {
+  .afhdl-sidebar {
+    width: min(86vw, 320px);
+  }
+  .afhdl-main {
+    width: min(980px, 100%);
   }
 }
 

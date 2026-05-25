@@ -47,3 +47,5 @@ out/
 /.txtconfig
 /.txtignore
 frontend.txt
+
+*.exe

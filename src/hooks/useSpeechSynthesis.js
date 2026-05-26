@@ -11,9 +11,10 @@ export const useSpeechSynthesis = () => {
         };
 
         loadVoices();
-        window.speechSynthesis.onvoiceschanged = loadVoices;
+        window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
 
         return () => {
+            window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
             window.speechSynthesis.cancel();
         };
     }, []);

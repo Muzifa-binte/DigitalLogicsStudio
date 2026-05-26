@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import NSLayout from './components/NSLayout';
-import { QuaternarySection } from '../../components/Quaternary Section';
+import { QuaternarySection } from '../../components/QuaternarySection';
 
 export default function NumberConverter() {
     const [decimal, setDecimal] = useState('');

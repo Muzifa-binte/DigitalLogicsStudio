@@ -8,7 +8,7 @@ const FOOTER_COLS = [
       { label: "Circuit Forge", to: "/boolforge" },
       { label: "K-Map Studio", to: "/kmapgenerator" },
       { label: "Boolean Algebra", to: "/boolean/overview" },
-      { label: "Number Systems", to: "/numbersystemcalculator" },
+      { label: "Number Systems", to: "/number-systems/calculator" },
     ],
   },
   {

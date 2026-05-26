@@ -13,15 +13,9 @@
     "@testing-library/user-event": "^13.5.0",
     "@vercel/analytics": "^2.0.1",
     "axios": "^1.6.2",
-    "cors": "^2.8.5",
     "dld-books": "^1.0.1",
-    "express": "^4.18.2",
-    "fs": "^0.0.1-security",
     "lucide-react": "^0.563.0",
-    "mongoose": "^8.0.3",
-    "multer": "^1.4.5-lts.1",
     "normalize-path": "^3.0.0",
-    "path": "^0.12.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-helmet-async": "^3.0.0",
@@ -29,8 +23,8 @@
     "react-router-dom": "^6.20.1",
     "react-scripts": "5.0.1",
     "react-snap": "^1.23.0",
-    "web-vitals": "^2.1.4",
-    "ws": "^8.15.0"
+    "recharts": "^3.8.1",
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "prebuild": "node scripts/generateSeoAssets.js",

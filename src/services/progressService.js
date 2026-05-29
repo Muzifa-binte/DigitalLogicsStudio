@@ -439,6 +439,7 @@ export const progressTestUtils = {
   getMonthMatrix,
   calculateSummary,
   calculateStreaks,
+  safeRead: (userKey) => clone(getCache(userKey)),
   // Expose cache helpers for tests
   _getCache: getCache,
   _resetCache: (userKey) => { cache[userKey] = defaultState(); },

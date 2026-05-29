@@ -16,11 +16,11 @@ const guestKey = "guest";
 
 // ─── In-memory cache (per user key) ──────────────────────────────────────────
 
-const cache = {};                // cache[userKey] = { problems, topics, activity, recentEvents }
+const cache = {}; // cache[userKey] = { problems, topics, activity, recentEvents }
 
 const defaultState = () => ({
   problems: {},
-  topics:   {},
+  topics: {},
   activity: {},
   recentEvents: [],
 });
@@ -40,13 +40,18 @@ const normalizeUserKey = (userOrKey) => {
   }
   if (!userOrKey) return guestKey;
   return String(
-    userOrKey.id || userOrKey._id || userOrKey.email || userOrKey.username || guestKey,
+    userOrKey.id ||
+      userOrKey._id ||
+      userOrKey.email ||
+      userOrKey.username ||
+      guestKey,
   ).toLowerCase();
 };
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
-const toDateKey = (value = new Date()) => new Date(value).toISOString().slice(0, 10);
+const toDateKey = (value = new Date()) =>
+  new Date(value).toISOString().slice(0, 10);
 
 const formatMonthKey = (value = new Date()) => {
   const d = new Date(value);
@@ -62,16 +67,23 @@ const mergeTopicState = (topic, currentState) => {
     completedAt: existing.completedAt || null,
     completionPercentage: existing.completionPercentage || 0,
     status: existing.status || "not_started",
-    completedSubtopics: Array.isArray(existing.completedSubtopics) ? existing.completedSubtopics : [],
+    completedSubtopics: Array.isArray(existing.completedSubtopics)
+      ? existing.completedSubtopics
+      : [],
     totalSubtopics: topic?.links?.length || existing.totalSubtopics || 0,
     title: topic?.title || existing.title || "",
   };
 };
 
 const calculateTopicCompletion = (topic, topicState) => {
-  const totalSubtopics = Math.max(topic?.links?.length || topicState.totalSubtopics || 0, 1);
+  const totalSubtopics = Math.max(
+    topic?.links?.length || topicState.totalSubtopics || 0,
+    1,
+  );
   const completedCount = topicState.completedSubtopics.length;
-  const completionPercentage = Math.round((completedCount / totalSubtopics) * 100);
+  const completionPercentage = Math.round(
+    (completedCount / totalSubtopics) * 100,
+  );
   return {
     totalSubtopics,
     completedCount,
@@ -99,8 +111,10 @@ const calculateStreaks = (activity) => {
     const prev = new Date(activeDays[i - 1]);
     const next = new Date(activeDays[i]);
     const diff = Math.round((next - prev) / 86_400_000);
-    if (diff === 1) { currentRun++; longest = Math.max(longest, currentRun); }
-    else currentRun = 1;
+    if (diff === 1) {
+      currentRun++;
+      longest = Math.max(longest, currentRun);
+    } else currentRun = 1;
   }
 
   let current = 0;
@@ -108,7 +122,10 @@ const calculateStreaks = (activity) => {
   while (true) {
     const key = toDateKey(cursor);
     const day = activity[key];
-    if (day && (day.solved > 0 || day.attempts > 0 || day.topicsCompleted > 0)) {
+    if (
+      day &&
+      (day.solved > 0 || day.attempts > 0 || day.topicsCompleted > 0)
+    ) {
       current++;
       cursor = new Date(cursor.getTime() - 86_400_000);
     } else break;
@@ -119,35 +136,50 @@ const calculateStreaks = (activity) => {
 
 const calculateSummary = (state, topics = [], problems = []) => {
   const problemEntries = Object.values(state.problems || {});
-  const topicEntries   = Object.values(state.topics   || {});
-  const solvedProblems   = problemEntries.filter((p) => p.status === "solved").length;
+  const topicEntries = Object.values(state.topics || {});
+  const solvedProblems = problemEntries.filter(
+    (p) => p.status === "solved",
+  ).length;
   const attemptedProblems = problemEntries.filter((p) => p.attempts > 0).length;
-  const completedTopics  = topicEntries.filter((t) => t.status === "completed").length;
+  const completedTopics = topicEntries.filter(
+    (t) => t.status === "completed",
+  ).length;
   const streaks = calculateStreaks(state.activity || {});
   return {
     solvedProblems,
     attemptedProblems,
     completedTopics,
     totalProblems: problems.length,
-    totalTopics:   topics.length,
-    completionRate: problems.length ? Math.round((solvedProblems / problems.length) * 100) : 0,
+    totalTopics: topics.length,
+    completionRate: problems.length
+      ? Math.round((solvedProblems / problems.length) * 100)
+      : 0,
     streaks,
   };
 };
 
 const getMonthMatrix = (activity, monthInput = new Date()) => {
-  const monthDate  = new Date(monthInput);
-  const year       = monthDate.getFullYear();
-  const month      = monthDate.getMonth();
+  const monthDate = new Date(monthInput);
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const monthKey   = formatMonthKey(monthDate);
+  const monthKey = formatMonthKey(monthDate);
 
   return Array.from({ length: daysInMonth }, (_, index) => {
     const dateKey = `${monthKey}-${String(index + 1).padStart(2, "0")}`;
-    const day = activity[dateKey] || { attempts: 0, solved: 0, topicsCompleted: 0, topicsOpened: 0 };
+    const day = activity[dateKey] || {
+      attempts: 0,
+      solved: 0,
+      topicsCompleted: 0,
+      topicsOpened: 0,
+    };
     const intensity = Math.min(
       4,
-      day.solved > 0 ? day.solved : day.attempts > 0 || day.topicsCompleted > 0 || day.topicsOpened > 0 ? 1 : 0,
+      day.solved > 0
+        ? day.solved
+        : day.attempts > 0 || day.topicsCompleted > 0 || day.topicsOpened > 0
+          ? 1
+          : 0,
     );
     return { date: dateKey, ...day, intensity };
   });
@@ -165,8 +197,8 @@ const snapshotFor = (userKey, { topics = [], problems = [] } = {}) => {
 
   return {
     state,
-    summary:      calculateSummary(state, topics, problems),
-    calendar:     getMonthMatrix(state.activity || {}, new Date()),
+    summary: calculateSummary(state, topics, problems),
+    calendar: getMonthMatrix(state.activity || {}, new Date()),
     recentEvents: clone(state.recentEvents || []),
   };
 };
@@ -194,7 +226,12 @@ const pushRecentEvent = (state, event) => {
 
 const ensureActivityDay = (state, dateKey) => {
   if (!state.activity[dateKey]) {
-    state.activity[dateKey] = { attempts: 0, solved: 0, topicsCompleted: 0, topicsOpened: 0 };
+    state.activity[dateKey] = {
+      attempts: 0,
+      solved: 0,
+      topicsCompleted: 0,
+      topicsOpened: 0,
+    };
   }
   return state.activity[dateKey];
 };
@@ -205,7 +242,6 @@ const makeEventId = (type) =>
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 const progressService = {
-
   getUserKey: normalizeUserKey,
 
   /**
@@ -218,9 +254,9 @@ const progressService = {
       const { data } = await apiClient.get("/progress/snapshot");
       if (data?.success && data.state) {
         cache[userKey] = {
-          problems:     data.state.problems     || {},
-          topics:       data.state.topics       || {},
-          activity:     data.state.activity     || {},
+          problems: data.state.problems || {},
+          topics: data.state.topics || {},
+          activity: data.state.activity || {},
           recentEvents: data.state.recentEvents || [],
         };
       }
@@ -244,14 +280,14 @@ const progressService = {
       if (existing.status === "solved") return;
       const meta = problemCatalog.find((p) => p.id === id);
       state.problems[id] = {
-        attempts:     existing.attempts     || 1,
-        openedAt:     existing.openedAt     || new Date().toISOString(),
+        attempts: existing.attempts || 1,
+        openedAt: existing.openedAt || new Date().toISOString(),
         lastAttemptAt: existing.lastAttemptAt || new Date().toISOString(),
-        title:  meta?.title || existing.title || `Problem ${id}`,
-        tags:   meta?.tags  || existing.tags  || [],
+        title: meta?.title || existing.title || `Problem ${id}`,
+        tags: meta?.tags || existing.tags || [],
         topicId: meta?.primaryTopicId || existing.topicId || null,
         ...existing,
-        status:   "solved",
+        status: "solved",
         solvedAt: existing.solvedAt || new Date().toISOString(),
       };
     });
@@ -270,8 +306,13 @@ const progressService = {
     const state = getCache(userKey);
     const dateKey = toDateKey();
     const current = state.problems[problem.id] || {
-      attempts: 0, status: "not_started", solvedAt: null, openedAt: null,
-      title: problem.title, tags: problem.tags || [], topicId: problem.primaryTopicId || null,
+      attempts: 0,
+      status: "not_started",
+      solvedAt: null,
+      openedAt: null,
+      title: problem.title,
+      tags: problem.tags || [],
+      topicId: problem.primaryTopicId || null,
     };
     current.attempts += 1;
     current.status = current.status === "solved" ? "solved" : "attempted";
@@ -295,7 +336,7 @@ const progressService = {
 
     await tryRemotePost(`/progress/problems/${problem.id}/attempt`, {
       title: problem.title,
-      tags:  problem.tags || [],
+      tags: problem.tags || [],
       topicId: problem.primaryTopicId || null,
     });
 
@@ -306,13 +347,24 @@ const progressService = {
     const state = getCache(userKey);
     const dateKey = toDateKey();
     const current = state.problems[problem.id] || {
-      attempts: 0, status: "not_started", solvedAt: null, openedAt: null,
-      title: problem.title, tags: problem.tags || [], topicId: problem.primaryTopicId || null,
+      attempts: 0,
+      status: "not_started",
+      solvedAt: null,
+      openedAt: null,
+      title: problem.title,
+      tags: problem.tags || [],
+      topicId: problem.primaryTopicId || null,
     };
 
     const wasSolved = current.status === "solved";
-    current.status = solved ? "solved" : current.attempts > 0 ? "attempted" : "not_started";
-    current.solvedAt = solved ? (current.solvedAt || new Date().toISOString()) : null;
+    current.status = solved
+      ? "solved"
+      : current.attempts > 0
+        ? "attempted"
+        : "not_started";
+    current.solvedAt = solved
+      ? current.solvedAt || new Date().toISOString()
+      : null;
     current.title = problem.title;
     current.tags = problem.tags || [];
     current.topicId = problem.primaryTopicId || current.topicId || null;
@@ -333,7 +385,10 @@ const progressService = {
     const path = solved
       ? `/progress/problems/${problem.id}/complete`
       : `/progress/problems/${problem.id}/uncomplete`;
-    await tryRemotePost(path, { title: problem.title, tags: problem.tags || [] });
+    await tryRemotePost(path, {
+      title: problem.title,
+      tags: problem.tags || [],
+    });
 
     return snapshotFor(userKey, catalog);
   },
@@ -347,7 +402,8 @@ const progressService = {
       state.problems[problemId] = {
         ...(state.problems[problemId] || {}),
         status: "solved",
-        solvedAt: state.problems[problemId]?.solvedAt || new Date().toISOString(),
+        solvedAt:
+          state.problems[problemId]?.solvedAt || new Date().toISOString(),
         title: p.title,
       };
     }
@@ -361,8 +417,12 @@ const progressService = {
     const dateKey = toDateKey();
     const current = mergeTopicState(topic, state.topics[topic.id]);
     current.openedAt = current.openedAt || new Date().toISOString();
-    current.status = current.status === "completed" ? "completed" : "in_progress";
-    state.topics[topic.id] = { ...current, ...calculateTopicCompletion(topic, current) };
+    current.status =
+      current.status === "completed" ? "completed" : "in_progress";
+    state.topics[topic.id] = {
+      ...current,
+      ...calculateTopicCompletion(topic, current),
+    };
 
     const day = ensureActivityDay(state, dateKey);
     day.topicsOpened += 1;
@@ -407,7 +467,10 @@ const progressService = {
     const nextState = {
       ...current,
       ...derived,
-      completedAt: derived.status === "completed" ? (current.completedAt || new Date().toISOString()) : null,
+      completedAt:
+        derived.status === "completed"
+          ? current.completedAt || new Date().toISOString()
+          : null,
     };
     state.topics[topic.id] = nextState;
 
@@ -423,12 +486,15 @@ const progressService = {
       });
     }
 
-    await tryRemotePost(`/progress/topics/${topic.id}/subtopics/${subtopicId}`, {
-      title: topic.title,
-      subtopicId,
-      equivalentSubtopicIds: equivalentIds,
-      totalSubtopics: topic?.links?.length || 0,
-    });
+    await tryRemotePost(
+      `/progress/topics/${topic.id}/subtopics/${subtopicId}`,
+      {
+        title: topic.title,
+        subtopicId,
+        equivalentSubtopicIds: equivalentIds,
+        totalSubtopics: topic?.links?.length || 0,
+      },
+    );
 
     return snapshotFor(userKey, catalog);
   },
@@ -439,10 +505,11 @@ export const progressTestUtils = {
   getMonthMatrix,
   calculateSummary,
   calculateStreaks,
-  safeRead: (userKey) => clone(getCache(userKey)),
   // Expose cache helpers for tests
   _getCache: getCache,
-  _resetCache: (userKey) => { cache[userKey] = defaultState(); },
+  _resetCache: (userKey) => {
+    cache[userKey] = defaultState();
+  },
 };
 
 export default progressService;

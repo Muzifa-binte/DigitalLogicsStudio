@@ -1,18 +1,20 @@
 import axios from "axios";
 
-// FIX 4: The frontend .env only had REACT_APP_API_URL=http://localhost:5000/api.
-//         In production (Netlify / Vercel / any static host) that env var must
-//         be set to the deployed backend URL, e.g.:
-//           REACT_APP_API_URL=https://your-backend.vercel.app/api
-//
-//         Set this in:
-//           • frontend/.env.production  (for local "npm run build" deploys)
-//           • Your hosting dashboard    (Netlify / Vercel env vars UI)
-//
-//         The fallback below still works for local dev.
+const LOCAL_API_URL = "http://localhost:5000/api";
+const PRODUCTION_API_URL = "https://digital-logics-studio-backend.vercel.app/api";
+
+function resolveApiBaseUrl() {
+  const configuredApiUrl = process.env.REACT_APP_API_URL?.trim();
+
+  if (configuredApiUrl) {
+    return configuredApiUrl.replace(/\/+$/, "");
+  }
+
+  return process.env.NODE_ENV === "production" ? PRODUCTION_API_URL : LOCAL_API_URL;
+}
 
 const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000/api",
+  baseURL: resolveApiBaseUrl(),
   withCredentials: true, // Required to send/receive the httpOnly auth cookie
   headers: {
     "Content-Type": "application/json",

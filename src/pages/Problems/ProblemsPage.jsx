@@ -440,13 +440,14 @@ export default function ProblemsPage() {
       startAutoscroll(el.scrollLeft < (el.scrollWidth - el.clientWidth) / 2);
     }, 800);
 
+    const resumeTimeout = resumeTimeoutRef.current;
     return () => {
       clearTimeout(timeoutId);
       if (tweenRef.current) {
         tweenRef.current.kill();
       }
-      if (resumeTimeoutRef.current) {
-        clearTimeout(resumeTimeoutRef.current);
+      if (resumeTimeout) {
+        clearTimeout(resumeTimeout);
       }
     };
   }, [startAutoscroll]);

@@ -1359,11 +1359,166 @@
     font-size: 0.875rem;
   }
 
-  /* Ensure the problems table wrapper actually clips properly */
+  /* ══════════════════════════════════════════════════════
+     Card-list layout — table → stacked cards on mobile
+     Strategy: override ALL table display values to block/flex,
+     then lay out each card with explicit flex rows.
+  ══════════════════════════════════════════════════════ */
+
+  /* Step 1: strip table formatting from every element */
+  .problems-table,
+  .problems-table thead,
+  .problems-table tbody,
+  .problems-table tr,
+  .problems-table th,
+  .problems-table td {
+    display: block;
+    box-sizing: border-box;
+  }
+
+  /* Step 2: hide the header */
+  .problems-table thead { display: none; }
+
+  /* Step 3: tbody = vertical stack */
+  .problems-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+  }
+
+  /* Step 4: each row = a card (flex column) */
+  .problems-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 0.85rem 0.9rem;
+    gap: 0.4rem;
+    border: 1px solid var(--problems-border);
+    border-radius: 0.875rem;
+    background: var(--problems-surface-soft);
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease;
+  }
+
+  .problems-table tbody tr:hover,
+  .problems-table tbody tr.is-selected {
+    background: var(--problems-row-hover);
+    border-color: var(--problems-border-strong);
+  }
+
+  /* Step 5: reset all td */
+  .problems-table td {
+    padding: 0;
+    border: none;
+    width: 100%;
+  }
+
+  /* ── col 1: listId — HIDE ── */
+  .problems-table td:nth-child(1) { display: none; }
+
+  /* ── col 2: title + topic ── */
+  .problems-table td:nth-child(2) { order: 1; }
+
+  .problems-table td:nth-child(2) .problem-title-text {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--problems-text-strong);
+  }
+
+  .problems-table td:nth-child(2) .problem-topic-text {
+    display: block;
+    font-size: 0.72rem;
+    margin-top: 0.12rem;
+    color: var(--secondary-text);
+  }
+
+  /* ── col 3: acceptance % — HIDE ── */
+  .problems-table td:nth-child(3) { display: none; }
+
+  /* ── col 4 + col 5: difficulty & lock on ONE row ── */
+  /* Wrap them by making both inline-flex and letting the card's
+     flex-direction: column render them as a shared flex row via
+     a row-level wrapper — achieved by giving them explicit row via order
+     and using a pseudo-row: both get order:2, width:auto, and the card
+     switches to flex-wrap:wrap for just that layer */
+
+  .problems-table td:nth-child(4) {
+    order: 2;
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    flex-shrink: 0;
+    margin-right: auto; /* push col5 to the right */
+  }
+
+  .problems-table td:nth-child(4) .difficulty-pill {
+    min-width: 58px;
+    min-height: 24px;
+    font-size: 0.72rem;
+    padding: 0.16rem 0.6rem;
+  }
+
+  .problems-table td:nth-child(5) {
+    order: 2;
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    color: var(--problems-text-soft);
+    opacity: 0.7;
+    margin-left: auto; /* float right on the same row */
+  }
+
+  /* Allow col4+col5 to sit side by side by enabling wrap on the card */
+  .problems-table tbody tr {
+    flex-wrap: wrap;
+  }
+
+  /* Force col2 and col6/col7 to be full width so they don't wrap beside col4/5 */
+  .problems-table td:nth-child(2),
+  .problems-table td:nth-child(6),
+  .problems-table td:nth-child(7) {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  /* ── col 6: status chip ── */
+  .problems-table td:nth-child(6) {
+    order: 3;
+  }
+
+  .problems-table td:nth-child(6) .status-chip {
+    display: block;
+    width: 100%;
+    text-align: center;
+    min-height: 32px;
+    font-size: 0.78rem;
+    border-radius: 0.6rem;
+    padding: 0.35rem 0.75rem;
+    box-sizing: border-box;
+  }
+
+  /* ── col 7: tags ── */
+  .problems-table td:nth-child(7) {
+    order: 4;
+  }
+
+  .problems-table td:nth-child(7) .problem-tag-list {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .problems-table td:nth-child(7) .problem-tag-list span {
+    font-size: 0.68rem;
+    padding: 0.18rem 0.48rem;
+  }
+
   .problems-table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 0.5rem;
+    overflow-x: visible;
   }
 }
 
@@ -1407,7 +1562,7 @@
   }
 
   .problems-table-card {
-    padding: 0.75rem;
+    padding: 0.65rem;
     border-radius: 1rem;
   }
 
@@ -1416,36 +1571,13 @@
     font-size: 0.78rem;
   }
 
-  /* Prevent the table min-width from forcing horizontal overflow on tiny screens */
-  .problems-table {
-    min-width: 0;
-    width: 100%;
-  }
-
-  /* On very small screens, collapse the table into a card-list layout */
-  .problems-table thead {
-    display: none;
-  }
-
   .problems-table tbody tr {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    padding: 0.75rem;
-    border: 1px solid var(--problems-border);
+    padding: 0.75rem 0.85rem;
     border-radius: 0.85rem;
-    margin-bottom: 0.5rem;
-    background: var(--problems-surface-soft);
   }
 
-  .problems-table td {
-    padding: 0.2rem 0;
-    border-top: none;
-  }
-
-  /* Show data labels inline before each cell */
-  .problems-table td::before {
-    display: none;
+  .problems-table td:nth-child(2) .problem-title-text {
+    font-size: 0.875rem;
   }
 }
 

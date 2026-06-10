@@ -22,7 +22,6 @@ export function SaveAndLoad({
     JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 
   const setProjects = (p) => {
-    console.log("Saving projects", p);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
   };
 
@@ -155,7 +154,9 @@ export function SaveAndLoad({
               className="logic-circuit-project-manager-project-name-text-input-field"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && saveProject()}
               placeholder="Project name"
+              autoFocus
             />
 
             <div className="logic-circuit-project-manager-modal-button-row-layout-wrapper">

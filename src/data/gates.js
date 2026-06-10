@@ -81,17 +81,31 @@ export const gateSymbols = {
         </svg>
     ),
     'INPUT': (
+        // Classic logic-source / switch symbol (Multisim style):
+        // Pentagon with flat left edge and arrow-point on the right.
+        // Body: x=8..56, y=18..42  →  point tip at x=70, y=30
         <svg viewBox="0 0 80 60" className="gate-symbol">
-            <rect x="15" y="20" width="50" height="20" rx="3"
-                fill="none" stroke="currentColor" strokeWidth="2.5" />
-            <line x1="65" y1="30" x2="78" y2="30" stroke="currentColor" strokeWidth="2" />
+            <polygon
+                points="8,18 56,18 70,30 56,42 8,42"
+                fill="none" stroke="currentColor" strokeWidth="2.5"
+                strokeLinejoin="round"
+            />
+            {/* Output wire from the tip */}
+            <line x1="70" y1="30" x2="78" y2="30" stroke="currentColor" strokeWidth="2" />
         </svg>
     ),
     'OUTPUT': (
+        // Classic logic-probe symbol (Multisim style):
+        // Pentagon with arrow-point on the left, flat right edge.
+        // Point tip at x=10, y=30  →  body: x=24..72, y=18..42
         <svg viewBox="0 0 80 60" className="gate-symbol">
-            <rect x="15" y="20" width="50" height="20" rx="3"
-                fill="none" stroke="currentColor" strokeWidth="2.5" />
-            <line x1="2" y1="30" x2="15" y2="30" stroke="currentColor" strokeWidth="2" />
+            <polygon
+                points="10,30 24,18 72,18 72,42 24,42"
+                fill="none" stroke="currentColor" strokeWidth="2.5"
+                strokeLinejoin="round"
+            />
+            {/* Input wire into the point */}
+            <line x1="2" y1="30" x2="10" y2="30" stroke="currentColor" strokeWidth="2" />
         </svg>
     )
 };

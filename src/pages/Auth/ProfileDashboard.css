@@ -4078,3 +4078,347 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   CIRCUITS TAB
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Header card ─────────────────────────────────────────────── */
+.pd-circuits-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pd-circuits-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pd-circuits-header-icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.pd-circuits-open-btn {
+  flex-shrink: 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* ── Empty state ─────────────────────────────────────────────── */
+.pd-circuits-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+}
+
+.pd-circuits-empty-icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.pd-circuits-empty-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.pd-circuits-empty-sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--secondary-text);
+  max-width: 360px;
+  line-height: 1.55;
+}
+
+/* ── Circuits grid ───────────────────────────────────────────── */
+.pd-circuits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ── Individual circuit card ─────────────────────────────────── */
+.pd-circuit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 1.2rem;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.1);
+}
+
+.pd-circuit-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(2, 6, 23, 0.2);
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+/* Card top row */
+.pd-circuit-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.1rem 1.25rem 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.pd-circuit-card-icon-wrap {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 0.75rem;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.pd-circuit-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.pd-circuit-card-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pd-circuit-card-time {
+  font-size: 0.72rem;
+  color: var(--secondary-text);
+}
+
+.pd-circuit-card-delete {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.3rem;
+  border-radius: 0.5rem;
+  opacity: 0.45;
+  transition: opacity 0.15s, background 0.15s;
+  line-height: 1;
+}
+.pd-circuit-card-delete:hover {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Stats row */
+.pd-circuit-card-stats {
+  display: flex;
+  align-items: center;
+  padding: 0.9rem 1.25rem;
+  gap: 0;
+}
+
+.pd-circuit-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.pd-circuit-stat-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-color);
+  line-height: 1;
+}
+
+.pd-circuit-stat-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--secondary-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pd-circuit-stat-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border-color);
+  flex-shrink: 0;
+}
+
+/* Footer row */
+.pd-circuit-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  background: rgba(148, 163, 184, 0.04);
+}
+
+.pd-circuit-version-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--secondary-text);
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+}
+
+.pd-circuit-open-btn {
+  text-decoration: none;
+  font-size: 0.8rem !important;
+  padding: 0.35rem 0.9rem !important;
+  background: rgba(0, 255, 136, 0.1) !important;
+  border: 1px solid rgba(0, 255, 136, 0.3) !important;
+  color: #00ff88 !important;
+  border-radius: 0.6rem !important;
+  font-weight: 700 !important;
+  transition: background 0.15s, box-shadow 0.15s !important;
+  white-space: nowrap;
+}
+.pd-circuit-open-btn:hover {
+  background: rgba(0, 255, 136, 0.18) !important;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.2) !important;
+}
+
+/* ── Local storage info note ─────────────────────────────────── */
+.pd-circuit-local-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 0.85rem;
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  font-size: 0.82rem;
+  color: var(--secondary-text);
+  line-height: 1.55;
+}
+
+.pd-circuit-local-note-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.pd-circuit-local-note strong {
+  color: var(--text-color);
+}
+
+/* ── Light-mode overrides ────────────────────────────────────── */
+[data-theme='light'] .pd-circuit-card {
+  background: var(--card-bg-solid);
+  border-color: var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+[data-theme='light'] .pd-circuit-card:hover {
+  border-color: #059669;
+  box-shadow: var(--card-shadow-hover);
+}
+
+[data-theme='light'] .pd-circuit-card-icon-wrap {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(5, 150, 105, 0.2);
+}
+
+[data-theme='light'] .pd-circuit-open-btn {
+  background: rgba(5, 150, 105, 0.08) !important;
+  border-color: rgba(5, 150, 105, 0.3) !important;
+  color: #059669 !important;
+}
+
+[data-theme='light'] .pd-circuit-open-btn:hover {
+  background: rgba(5, 150, 105, 0.14) !important;
+  box-shadow: none !important;
+}
+
+[data-theme='light'] .pd-circuits-header-card {
+  background: var(--card-bg-solid);
+  border-color: var(--card-border);
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .pd-circuits-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pd-circuits-header-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pd-circuits-open-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Circuits tab additions (DB-backed) ─────────────────────────────────────── */
+
+.pd-circuits-section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--secondary-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+
+.pd-circuits-section-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pd-circuits-section-dot--cloud { background: #3b82f6; }
+.pd-circuits-section-dot--local { background: #f59e0b; }
+
+.pd-circuit-version-badge--cloud {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.25);
+  color: #3b82f6;
+}
+
+.pd-circuit-version-badge--local {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #f59e0b;
+}
+
+.pd-circuit-error-banner {
+  padding: 0.75rem 1.1rem;
+  border-radius: 0.75rem;
+  background: rgba(239, 68, 68, 0.07);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  font-size: 0.85rem;
+  color: #ef4444;
+  font-weight: 600;
+}

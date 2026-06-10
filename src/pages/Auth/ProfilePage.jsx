@@ -717,8 +717,38 @@ export default function ProfilePage() {
     "skills",
     "activity",
     "achievements",
+    "circuits",
     "engagement",
   ];
+
+  // ── Saved circuits (localStorage) ──────────────────────────────────────────
+  const CIRCUIT_STORAGE_KEY = "logic_editor_saved_projects_v1";
+
+  const [savedCircuits, setSavedCircuits] = React.useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(CIRCUIT_STORAGE_KEY) || "{}");
+    } catch {
+      return {};
+    }
+  });
+
+  // Re-read localStorage whenever the tab becomes active
+  React.useEffect(() => {
+    if (activeTab !== "circuits") return;
+    try {
+      setSavedCircuits(JSON.parse(localStorage.getItem(CIRCUIT_STORAGE_KEY) || "{}"));
+    } catch {
+      setSavedCircuits({});
+    }
+  }, [activeTab]);
+
+  const deleteCircuitProject = (name) => {
+    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    const updated = { ...savedCircuits };
+    delete updated[name];
+    localStorage.setItem(CIRCUIT_STORAGE_KEY, JSON.stringify(updated));
+    setSavedCircuits(updated);
+  };
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -1877,6 +1907,129 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ══════════════ CIRCUITS TAB ══════════════ */}
+        {activeTab === "circuits" && (() => {
+          const circuitNames = Object.keys(savedCircuits);
+
+          return (
+            <div className="pd-section">
+              {/* ── Header card ── */}
+              <div className="pd-card pd-circuits-header-card">
+                <div className="pd-circuits-header-left">
+                  <span className="pd-circuits-header-icon">⚡</span>
+                  <div>
+                    <h2 className="pd-card-title" style={{ margin: 0 }}>My Saved Circuits</h2>
+                    <p className="pd-card-sub" style={{ margin: "0.25rem 0 0" }}>
+                      {circuitNames.length === 0
+                        ? "No circuits saved yet"
+                        : `${circuitNames.length} project${circuitNames.length > 1 ? "s" : ""} saved locally`}
+                    </p>
+                  </div>
+                </div>
+                <Link to="/boolforge" className="pd-btn pd-btn--primary pd-circuits-open-btn">
+                  Open Circuit Forge →
+                </Link>
+              </div>
+
+              {/* ── Empty state ── */}
+              {circuitNames.length === 0 ? (
+                <div className="pd-card pd-circuits-empty">
+                  <span className="pd-circuits-empty-icon">🔌</span>
+                  <p className="pd-circuits-empty-title">No saved circuits yet</p>
+                  <p className="pd-circuits-empty-sub">
+                    Head over to Circuit Forge, build a circuit, and hit "Save Project" — it'll appear here.
+                  </p>
+                  <Link to="/boolforge" className="pd-btn pd-btn--primary" style={{ marginTop: "0.5rem" }}>
+                    Go to Circuit Forge
+                  </Link>
+                </div>
+              ) : (
+                <div className="pd-circuits-grid">
+                  {circuitNames.map((name) => {
+                    const project = savedCircuits[name];
+                    const latestSnap = project?.versions?.[0];
+                    const gates = Array.isArray(latestSnap?.gates) ? latestSnap.gates : [];
+                    const wires = Array.isArray(latestSnap?.wires) ? latestSnap.wires : [];
+                    const inputCount = gates.filter((g) => g.type === "INPUT").length;
+                    const outputCount = gates.filter((g) => g.type === "OUTPUT").length;
+                    const savedAt = latestSnap?.time
+                      ? timeAgo(new Date(latestSnap.time).toISOString())
+                      : "—";
+
+                    return (
+                      <div key={name} className="pd-circuit-card">
+                        {/* Card top */}
+                        <div className="pd-circuit-card-top">
+                          <div className="pd-circuit-card-icon-wrap">
+                            <span className="pd-circuit-card-icon">🔧</span>
+                          </div>
+                          <div className="pd-circuit-card-info">
+                            <span className="pd-circuit-card-name">{name}</span>
+                            <span className="pd-circuit-card-time">Saved {savedAt}</span>
+                          </div>
+                          <button
+                            className="pd-circuit-card-delete"
+                            title="Delete this project"
+                            onClick={() => deleteCircuitProject(name)}
+                          >
+                            🗑
+                          </button>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="pd-circuit-card-stats">
+                          <div className="pd-circuit-stat">
+                            <span className="pd-circuit-stat-val">{gates.length}</span>
+                            <span className="pd-circuit-stat-label">Gates</span>
+                          </div>
+                          <div className="pd-circuit-stat-divider" />
+                          <div className="pd-circuit-stat">
+                            <span className="pd-circuit-stat-val">{wires.length}</span>
+                            <span className="pd-circuit-stat-label">Wires</span>
+                          </div>
+                          <div className="pd-circuit-stat-divider" />
+                          <div className="pd-circuit-stat">
+                            <span className="pd-circuit-stat-val">{inputCount}</span>
+                            <span className="pd-circuit-stat-label">Inputs</span>
+                          </div>
+                          <div className="pd-circuit-stat-divider" />
+                          <div className="pd-circuit-stat">
+                            <span className="pd-circuit-stat-val">{outputCount}</span>
+                            <span className="pd-circuit-stat-label">Outputs</span>
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="pd-circuit-card-footer">
+                          <span className="pd-circuit-version-badge">
+                            💾 Local
+                          </span>
+                          <Link
+                            to="/boolforge"
+                            className="pd-btn pd-btn--sm pd-circuit-open-btn"
+                            title="Open Circuit Forge to load this project"
+                          >
+                            Open in Forge →
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* ── Info note ── */}
+              <div className="pd-circuit-local-note">
+                <span className="pd-circuit-local-note-icon">ℹ️</span>
+                <span>
+                  Circuits are saved in your browser's local storage. To load a saved circuit,
+                  open Circuit Forge and click <strong>Load Project</strong>.
+                </span>
               </div>
             </div>
           );

@@ -12,15 +12,6 @@
   min-height: 100vh;
 }
 
-/* Give the footer a solid background so the fixed grid doesn't bleed through */
-.auth-page-shell .home-footer {
-  position: relative;
-  z-index: 2;
-  background: var(--bg-color);
-  border-top: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
 .pd-main {
   position: relative;
   z-index: 1;
@@ -1218,12 +1209,17 @@
 
 /* ── Chart tooltip ───────────────────────────────────────────── */
 .pd-chart-tooltip {
+  position: relative;
+  z-index: 20;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 0.65rem;
   padding: 0.65rem 0.9rem;
   box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
   font-size: 0.82rem;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translate(-50%, calc(-100% - 12px));
 }
 .pd-chart-tooltip-label {
   margin: 0 0 0.35rem;
@@ -2575,8 +2571,8 @@
 
 /* ── Tooltip ── */
 .ghcal-tooltip {
-  position: fixed;
-  transform: translate(-50%, -100%);
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 12px));
   background: #1e293b;
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 8px;

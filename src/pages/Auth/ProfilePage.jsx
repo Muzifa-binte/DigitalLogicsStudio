@@ -26,6 +26,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
 import progressService from "../../services/progressService";
 import apiClient from "../../services/apiClient";
+import "../Home/Home.css";
 import "./Auth.css";
 import "./ProfileDashboard.css";
 
@@ -170,13 +171,27 @@ function buildYearGrid(activityMap) {
 function GithubCalendar({ activityMap, streakCurrent, streakLongest, activeDays, totalContributions }) {
   const [tooltip, setTooltip] = React.useState(null);
   const { weeks, monthLabels } = React.useMemo(() => buildYearGrid(activityMap), [activityMap]);
+  const wrapRef = React.useRef(null);
 
   const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const CELL = 13; // px per cell
   const GAP = 3;   // px gap
 
+  const updateTooltip = React.useCallback((day, currentTarget) => {
+    const wrapRect = wrapRef.current?.getBoundingClientRect();
+    const cellRect = currentTarget.getBoundingClientRect();
+
+    if (!wrapRect) return;
+
+    setTooltip({
+      day,
+      x: cellRect.left - wrapRect.left + cellRect.width / 2,
+      y: cellRect.top - wrapRect.top,
+    });
+  }, []);
+
   return (
-    <div className="ghcal-wrap">
+    <div className="ghcal-wrap" ref={wrapRef}>
       {/* ── Stats row ── */}
       <div className="ghcal-stats">
         <div className="ghcal-stat">
@@ -246,10 +261,8 @@ function GithubCalendar({ activityMap, streakCurrent, streakLongest, activeDays,
                       key={day.date}
                       className={`ghcal-cell ghcal-cell--${day.intensity}`}
                       style={{ gridColumn: wi + 1, gridRow: di + 1 }}
-                      onMouseEnter={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        setTooltip({ day, x: rect.left + rect.width / 2, y: rect.top - 8 });
-                      }}
+                      onMouseEnter={(e) => updateTooltip(day, e.currentTarget)}
+                      onMouseMove={(e) => updateTooltip(day, e.currentTarget)}
                       onMouseLeave={() => setTooltip(null)}
                     />
                   );
@@ -524,6 +537,7 @@ export default function ProfilePage() {
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [backendOk, setBackendOk] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [chartTooltipPosition, setChartTooltipPosition] = useState(null);
 
   // Feedback
   const [feedbackDone, setFeedbackDone] = useState(
@@ -699,6 +713,20 @@ export default function ProfilePage() {
   const radarData = buildRadarData(topicStats);
   const weekComp = getWeekComparison(calendarDots);
   const mostActiveDay = getMostActiveDay(calendarDots);
+
+  const handleChartMouseMove = useCallback((state) => {
+    if (
+      state?.isTooltipActive &&
+      typeof state.chartX === "number" &&
+      typeof state.chartY === "number"
+    ) {
+      setChartTooltipPosition({ x: state.chartX, y: state.chartY });
+    }
+  }, []);
+
+  const handleChartMouseLeave = useCallback(() => {
+    setChartTooltipPosition(null);
+  }, []);
 
   const joinDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString("en-US", {
@@ -1167,6 +1195,8 @@ export default function ProfilePage() {
                   <LineChart
                     data={weeklyTrend}
                     margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
+                    onMouseMove={handleChartMouseMove}
+                    onMouseLeave={handleChartMouseLeave}
                   >
                     <CartesianGrid
                       strokeDasharray="3 3"
@@ -1180,7 +1210,13 @@ export default function ProfilePage() {
                       tick={{ fontSize: 12, fill: "var(--secondary-text)" }}
                       allowDecimals={false}
                     />
-                    <Tooltip content={<ChartTooltip />} />
+                    <Tooltip
+                      content={<ChartTooltip />}
+                      position={chartTooltipPosition || undefined}
+                      allowEscapeViewBox={{ x: true, y: true }}
+                      wrapperStyle={{ pointerEvents: "none" }}
+                      offset={14}
+                    />
                     <Legend wrapperStyle={{ fontSize: "0.82rem" }} />
                     <Line
                       type="monotone"
@@ -1217,6 +1253,8 @@ export default function ProfilePage() {
                     <BarChart
                       data={dailyActivity}
                       margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                      onMouseMove={handleChartMouseMove}
+                      onMouseLeave={handleChartMouseLeave}
                     >
                       <CartesianGrid
                         strokeDasharray="3 3"
@@ -1230,7 +1268,13 @@ export default function ProfilePage() {
                         tick={{ fontSize: 12, fill: "var(--secondary-text)" }}
                         allowDecimals={false}
                       />
-                      <Tooltip content={<ChartTooltip />} />
+                      <Tooltip
+                        content={<ChartTooltip />}
+                        position={chartTooltipPosition || undefined}
+                        allowEscapeViewBox={{ x: true, y: true }}
+                        wrapperStyle={{ pointerEvents: "none" }}
+                        offset={14}
+                      />
                       <Legend wrapperStyle={{ fontSize: "0.82rem" }} />
                       <Bar
                         dataKey="solved"
@@ -1265,6 +1309,8 @@ export default function ProfilePage() {
                   <RadarChart
                     data={radarData}
                     margin={{ top: 8, right: 24, left: 24, bottom: 8 }}
+                    onMouseMove={handleChartMouseMove}
+                    onMouseLeave={handleChartMouseLeave}
                   >
                     <PolarGrid stroke="rgba(148,163,184,0.2)" />
                     <PolarAngleAxis
@@ -1284,7 +1330,13 @@ export default function ProfilePage() {
                       fillOpacity={0.25}
                       strokeWidth={2}
                     />
-                    <Tooltip content={<ChartTooltip />} />
+                    <Tooltip
+                      content={<ChartTooltip />}
+                      position={chartTooltipPosition || undefined}
+                      allowEscapeViewBox={{ x: true, y: true }}
+                      wrapperStyle={{ pointerEvents: "none" }}
+                      offset={14}
+                    />
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
@@ -1301,7 +1353,10 @@ export default function ProfilePage() {
                   <p className="pd-empty">Start topics to see the breakdown.</p>
                 ) : (
                   <ResponsiveContainer width="100%" height={280}>
-                    <PieChart>
+                    <PieChart
+                      onMouseMove={handleChartMouseMove}
+                      onMouseLeave={handleChartMouseLeave}
+                    >
                       <Pie
                         data={pieData}
                         cx="50%"
@@ -1316,7 +1371,13 @@ export default function ProfilePage() {
                           />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(v, name) => [`${v}%`, name]} />
+                      <Tooltip
+                        formatter={(v, name) => [`${v}%`, name]}
+                        position={chartTooltipPosition || undefined}
+                        allowEscapeViewBox={{ x: true, y: true }}
+                        wrapperStyle={{ pointerEvents: "none" }}
+                        offset={14}
+                      />
                       <Legend
                         wrapperStyle={{ fontSize: "0.82rem" }}
                         formatter={(value, entry) =>
@@ -1396,6 +1457,8 @@ export default function ProfilePage() {
                     { topic: "Arithmetic", pct: topicStats.arithmetic },
                   ]}
                   margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
+                  onMouseMove={handleChartMouseMove}
+                  onMouseLeave={handleChartMouseLeave}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -1412,7 +1475,11 @@ export default function ProfilePage() {
                   />
                   <Tooltip
                     content={<ChartTooltip />}
+                    position={chartTooltipPosition || undefined}
+                    allowEscapeViewBox={{ x: true, y: true }}
                     formatter={(v) => `${v}%`}
+                    wrapperStyle={{ pointerEvents: "none" }}
+                    offset={14}
                   />
                   <Bar dataKey="pct" name="Completion %" radius={[6, 6, 0, 0]}>
                     {PIE_COLORS.map((c, i) => (

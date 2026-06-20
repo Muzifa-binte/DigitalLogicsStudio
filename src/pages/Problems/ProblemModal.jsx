@@ -213,55 +213,56 @@ const ProblemModal = ({ problem, onClose, onSolved }) => {
               </div>
             </section>
 
-            <section className="prob-section">
-              <h4>Truth Table</h4>
-              {problem.truthTable?.length ? (
-                <div className="prob-table-wrap">
-                  <table className="prob-truth-table">
-                    <thead>
-                      <tr>
-                        {Object.keys(problem.truthTable[0]).map((col) => (
-                          <th key={col}>{col}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {problem.truthTable.map((row, i) => (
-                        <tr key={i}>
-                          {Object.values(row).map((val, j) => (
-                            <td
-                              key={j}
-                              className={
-                                typeof val === "number" && val === 1
-                                  ? "cell-one"
-                                  : ""
-                              }
-                            >
-                              {String(val)}
-                            </td>
+            {showHint && (
+              <section className="prob-section prob-hint" style={{ marginTop: "1rem" }}>
+                <h4>💡 Hint: Truth Table</h4>
+                {problem.truthTable?.length ? (
+                  <div className="prob-table-wrap" style={{ marginTop: "0.75rem", marginBottom: "0.75rem" }}>
+                    <table className="prob-truth-table">
+                      <thead>
+                        <tr>
+                          {Object.keys(problem.truthTable[0]).map((col) => (
+                            <th key={col}>{col}</th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p style={{ color: "var(--secondary-text)", fontSize: "0.85rem" }}>
-                  No truth table available for this problem type.
-                </p>
-              )}
-            </section>
-
-            {showHint && (
-              <section className="prob-section prob-hint">
-                <h4>💡 Hint</h4>
-                <p>{problem.hint}</p>
+                      </thead>
+                      <tbody>
+                        {problem.truthTable.map((row, i) => (
+                          <tr key={i}>
+                            {Object.values(row).map((val, j) => (
+                              <td
+                                key={j}
+                                className={
+                                  typeof val === "number" && val === 1
+                                    ? "cell-one"
+                                    : ""
+                                }
+                              >
+                                {String(val)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p style={{ color: "var(--secondary-text)", fontSize: "0.85rem" }}>
+                    No truth table available for this problem type.
+                  </p>
+                )}
+                {problem.hint && (
+                  <p style={{ marginTop: "0.5rem", fontStyle: "italic", color: "var(--text-color, #e8f0ff)" }}>
+                    <strong>Tip:</strong> {problem.hint}
+                  </p>
+                )}
               </section>
             )}
 
             <button
               className="prob-hint-btn"
               onClick={() => setShowHint((v) => !v)}
+              style={{ marginTop: "1rem" }}
             >
               {showHint ? "Hide Hint" : "Show Hint"}
             </button>

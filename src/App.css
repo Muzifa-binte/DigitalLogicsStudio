@@ -1351,7 +1351,7 @@ summary:hover {
   border-bottom: 1px solid rgba(148, 163, 184, 0.08) !important;
 }
 
-.kmap-truth-table .minterm-cell {
+.kmap-truth-table .input-term-cell {
   color: #64748b !important;
   font-weight: 700 !important;
   font-size: 0.8rem !important;
@@ -1407,7 +1407,7 @@ summary:hover {
   border-bottom-color: rgba(148, 163, 184, 0.2) !important;
 }
 
-[data-theme="light"] .kmap-truth-table .minterm-cell {
+[data-theme="light"] .kmap-truth-table .input-term-cell {
   color: #64748b !important;
 }
 

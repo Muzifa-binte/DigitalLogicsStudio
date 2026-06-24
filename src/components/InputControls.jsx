@@ -3,12 +3,12 @@ import React from 'react';
 export const InputControls = ({
     numVariables,
     variables,
-    minterms,
+    inputValue, 
     dontCares,
     optimizationType,
     onVariablesChange,
     onVariablesUpdate,
-    onMintermsChange,
+    onInputValueChange, 
     onDontCaresChange,
     onOptimizationTypeChange,
     onGenerate,
@@ -20,6 +20,10 @@ export const InputControls = ({
         newVars[index] = value.toUpperCase().charAt(0) || variables[index];
         onVariablesUpdate(newVars);
     };
+
+    const isSOP = optimizationType === "SOP";
+    const termLabel = isSOP ? "Minterms" : "Maxterms";
+    const examplePlaceholder = isSOP ? "e.g., 0,1,2,5,6,7" : "e.g., 3,4,8,11";
 
     return (
         <div className="kmap-card">
@@ -56,16 +60,16 @@ export const InputControls = ({
                 </div>
 
                 <div className="kmap-control-group">
-                    <label className="kmap-label">Minterms (comma-separated)</label>
+                    <label className="kmap-label">{termLabel} (comma-separated)</label>
                     <input
                         type="text"
                         className="kmap-input"
-                        value={minterms}
-                        onChange={(e) => onMintermsChange(e.target.value)}
-                        placeholder="e.g., 0,1,2,5,6,7"
+                        value={inputValue} 
+                        onChange={(e) => onInputValueChange(e.target.value)} 
+                        placeholder={examplePlaceholder} 
                     />
                     <p className="kmap-helper-text">
-                        Enter decimal minterm numbers (0 to {Math.pow(2, numVariables) - 1})
+                        Enter decimal {termLabel.toLowerCase} numbers (0 to {Math.pow(2, numVariables) - 1})
                     </p>
                 </div>
 

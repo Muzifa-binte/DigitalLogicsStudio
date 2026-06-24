@@ -12,7 +12,7 @@ export const GroupingGuide = ({ groups, variables, numVariables, grid, getColumn
         return () => cancel();
     }, [cancel]);
 
-    const explanations = generateExplanations(groups, variables, numVariables, grid);
+    const explanations = generateExplanations(groups, variables, numVariables, grid, optimizationType);
 
     const handlePlayExplanation = (index) => {
         if (isSpeaking) {
@@ -125,7 +125,7 @@ export const GroupingGuide = ({ groups, variables, numVariables, grid, getColumn
                     <li className="kmap-info-item">Make groups as large as possible to eliminate more variables</li>
                     <li className="kmap-info-item">Variables that change within a group are eliminated</li>
                     <li className="kmap-info-item">A cell can belong to multiple groups</li>
-                    <li className="kmap-info-item">All 1s must be covered by at least one group</li>
+                    <li className="kmap-info-item">All {optimizationType === 'SOP' ? '1s' : '0s'} must be covered by at least one group</li>
                 </ul>
             </div>
         </div>

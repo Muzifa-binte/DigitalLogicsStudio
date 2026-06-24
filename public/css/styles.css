@@ -5780,8 +5780,8 @@ select:focus-visible {
   border-bottom: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-/* Minterm index column */
-.kmap-truth-table .minterm-cell {
+/* input term index column */
+.kmap-truth-table .input-term-cell {
   color: #8b9dc3;
   font-weight: 700;
   font-size: 0.82rem;
@@ -5840,7 +5840,7 @@ select:focus-visible {
   border-bottom-color: rgba(148, 163, 184, 0.18);
 }
 
-[data-theme="light"] .kmap-truth-table .minterm-cell {
+[data-theme="light"] .kmap-truth-table .input-term-cell {
   color: #475569 !important;
 }
 

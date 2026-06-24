@@ -16,7 +16,7 @@ const KMapGenerator = () => {
     const { theme, toggle: toggleTheme } = useTheme();
     const [numVariables, setNumVariables] = useState(3);
     const [variables, setVariables] = useState(['A', 'B', 'C']);
-    const [minterms, setMinterms] = useState('');
+    const [inputValue, setInputValue] = useState('');
     const [dontCares, setDontCares] = useState('');
     const [optimizationType, setOptimizationType] = useState('SOP');
     const [showSolution, setShowSolution] = useState(false);
@@ -29,7 +29,7 @@ const KMapGenerator = () => {
         groups,
         getColumnLabels,
         getRowLabels
-    } = useKMapLogic(numVariables, variables, minterms, dontCares, optimizationType);
+    } = useKMapLogic(numVariables, variables, inputValue, dontCares, optimizationType);
 
     const handleVariablesChange = (value) => {
         const num = parseInt(value);
@@ -44,13 +44,13 @@ const KMapGenerator = () => {
             variable_count: numVariables,
         });
         if (numVariables === 3) {
-            setMinterms('0,1,2,5,6,7');
+            setInputValue('0,1,2,5,6,7'); // CHANGE: Updated to setInputValue
             setDontCares('3,4');
         } else if (numVariables === 4) {
-            setMinterms('0,1,2,5,6,7,8,9,10,14');
+            setInputValue('0,1,2,5,6,7,8,9,10,14'); // CHANGE: Updated to setInputVa
             setDontCares('3,11,12,13,15');
         } else {
-            setMinterms('0,2,3');
+            setInputValue('0,2,3'); // CHANGE: Updated to setInputValue
             setDontCares('1');
         }
         setShowSolution(false);
@@ -60,7 +60,7 @@ const KMapGenerator = () => {
         trackToolInteraction('kmap_generator', 'reset', {
             variable_count: numVariables,
         });
-        setMinterms('');
+        setInputValue(''); // CHANGE: Updated to setInputValue
         setDontCares('');
         setShowSolution(false);
         setShowGroupingGuide(false);
@@ -82,12 +82,12 @@ const KMapGenerator = () => {
                 <InputControls
                     numVariables={numVariables}
                     variables={variables}
-                    minterms={minterms}
+                    inputValue={inputValue}
                     dontCares={dontCares}
                     optimizationType={optimizationType}
                     onVariablesChange={handleVariablesChange}
                     onVariablesUpdate={setVariables}
-                    onMintermsChange={setMinterms}
+                    onInputValueChange={setInputValue}
                     onDontCaresChange={setDontCares}
                     onOptimizationTypeChange={setOptimizationType}
                     onGenerate={() => {
@@ -151,7 +151,7 @@ const KMapGenerator = () => {
                         <TruthTableDisplay
                             numVariables={numVariables}
                             variables={variables}
-                            minterms={minterms}
+                            inputValue={inputValue}
                             dontCares={dontCares}
                             optimizationType={optimizationType}
                         />

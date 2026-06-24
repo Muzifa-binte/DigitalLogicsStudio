@@ -28,7 +28,7 @@ export const KMapDisplay = ({
         if (cell === 1 && !isPOS) {
             cellClass += ' kmap-cell-filled';
         } else if (cell === 0 && isPOS) {
-            cellClass += ' kmap-cell-filled kmap-cell-pos';
+            cellClass += ` kmap-cell-filled ${!isGrouped ? 'kmap-cell-pos' : ''}`;
         } else if (cell === 'X') {
             cellClass += ' kmap-cell-dontcare';
         } else {
@@ -119,7 +119,7 @@ export const KMapDisplay = ({
                                     />
                                     <span>
                                         Group {idx + 1}: {group.size} cells 
-                                        ({optimizationType === 'POS' ? 'maxterms' : 'minterms'}: {group.minterms.join(', ')})
+                                        ({optimizationType === 'POS' ? 'maxterms' : 'minterms'}: {(group.maxterms || group.minterms)?.join(', ')})
                                     </span>
                                 </div>
                             ))}

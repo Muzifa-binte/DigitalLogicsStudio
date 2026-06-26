@@ -81,21 +81,6 @@ const leftNavSections = [
         },
       },
       {
-        label: "Sequential Arena",
-        icon: Sparkles,
-        topicSlug: "sequential-circuits",
-        panel: {
-          description: "Latches, flip-flops, state diagrams and sequential circuit design.",
-          links: [
-            { label: "Sequential Problems", action: "navigate", value: "/problems/sequential-circuits" },
-            { label: "Latches", action: "navigate", value: "/sequential/latches" },
-            { label: "Flip-Flops", action: "navigate", value: "/sequential/flip-flops" },
-            { label: "State Diagrams", action: "navigate", value: "/sequential/state-diagram" },
-            { label: "Timing Diagrams", action: "navigate", value: "/timing-diagrams" },
-          ],
-        },
-      },
-      {
         label: "Number Arena",
         icon: Binary,
         topicSlug: "number-systems",
@@ -526,7 +511,6 @@ export default function ProblemsPage() {
 
   const getActiveItem = () => {
     if (topicSlug === "k-map") return "K-Map Arena";
-    if (topicSlug === "sequential-circuits") return "Sequential Arena";
     if (topicSlug === "number-systems") return "Number Arena";
     if (!topicSlug) return "Problems Library";
     return "";

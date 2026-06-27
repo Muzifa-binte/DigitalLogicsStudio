@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Search, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const STATS = [
@@ -94,21 +95,7 @@ export default function HeroSection({ searchTerm, setSearchTerm, onSearchSubmit 
 
         {/* Search */}
         <form className="search-container" onSubmit={onSearchSubmit} role="search">          <div className="home-search-field">
-            <svg
-              className="search-field-icon"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+            <Search size={16} className="search-field-icon" aria-hidden="true" />
             <input
               type="text"
               placeholder="Search tools — K-Map, Boolean, Flip-Flop..."
@@ -124,7 +111,7 @@ export default function HeroSection({ searchTerm, setSearchTerm, onSearchSubmit 
                 onClick={() => setSearchTerm("")}
                 aria-label="Clear search"
               >
-                ✕
+                <X size={14} />
               </button>
             )}
           </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ArrowRight, BookOpen, Clock3, Search } from "lucide-react";
 import { Navbar } from "./Navbar";
 import HeroSection from "./HeroSection";
 import Footer from "./Footer";
@@ -160,7 +161,7 @@ const Home = () => {
                   <div className="home-resources-grid home-featured-box">
                     {[
                       {
-                        icon: "📖",
+                        icon: "BookOpen",
                         label: "Chapter 1",
                         title: "Book Ch1 Problems",
                         desc: "Foundational problems covering number systems, Boolean algebra, and logic gates.",
@@ -169,7 +170,7 @@ const Home = () => {
                         tag: "Beginner",
                       },
                       {
-                        icon: "📗",
+                        icon: "BookOpen",
                         label: "Chapter 2",
                         title: "Book Ch2 Problems",
                         desc: "Intermediate problems on combinational circuits, K-maps, and simplification.",
@@ -178,7 +179,7 @@ const Home = () => {
                         tag: "Intermediate",
                       },
                       {
-                        icon: "⏱️",
+                        icon: "Clock3",
                         label: "Visualization",
                         title: "Timing Diagrams",
                         desc: "Visualize signal transitions and clock-driven behavior in sequential circuits.",
@@ -186,24 +187,29 @@ const Home = () => {
                         accent: "#10b981",
                         tag: "Visual Tool",
                       },
-                    ].map((res) => (
-                      <Link key={res.to} to={res.to} className="home-res-card">
-                        <div className="home-res-card-glow" style={{ background: res.accent }} />
-                        <div className="home-res-card-top">
-                          <span className="home-res-card-icon">{res.icon}</span>
-                          <span className="home-res-card-tag" style={{ color: res.accent, borderColor: `${res.accent}40`, background: `${res.accent}12` }}>
-                            {res.tag}
-                          </span>
-                        </div>
-                        <div className="home-res-card-label">{res.label}</div>
-                        <h3 className="home-res-card-title">{res.title}</h3>
-                        <p className="home-res-card-desc">{res.desc}</p>
-                        <div className="home-res-card-cta" style={{ color: res.accent }}>
-                          Open resource <span className="home-res-card-arrow">→</span>
-                        </div>
-                        <div className="home-res-card-bar" style={{ background: res.accent }} />
-                      </Link>
-                    ))}
+                    ].map((res) => {
+                      const Icon = res.icon === "Clock3" ? Clock3 : BookOpen;
+                      return (
+                        <Link key={res.to} to={res.to} className="home-res-card">
+                          <div className="home-res-card-glow" style={{ background: res.accent }} />
+                          <div className="home-res-card-top">
+                            <span className="home-res-card-icon">
+                              <Icon size={24} />
+                            </span>
+                            <span className="home-res-card-tag" style={{ color: res.accent, borderColor: `${res.accent}40`, background: `${res.accent}12` }}>
+                              {res.tag}
+                            </span>
+                          </div>
+                          <div className="home-res-card-label">{res.label}</div>
+                          <h3 className="home-res-card-title">{res.title}</h3>
+                          <p className="home-res-card-desc">{res.desc}</p>
+                          <div className="home-res-card-cta" style={{ color: res.accent }}>
+                            Open resource <ArrowRight size={16} />
+                          </div>
+                          <div className="home-res-card-bar" style={{ background: res.accent }} />
+                        </Link>
+                      );
+                    })}
                   </div>
                 </section>
               )}
@@ -220,8 +226,8 @@ const Home = () => {
                 border: "1px dashed var(--border-color)",
               }}
             >
-              <p style={{ fontSize: "1.2rem" }}>
-                🔍 No tools found matching "<strong>{searchTerm}</strong>"
+              <p style={{ fontSize: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+                <Search size={18} /> No tools found matching "<strong>{searchTerm}</strong>"
               </p>
               <button
                 onClick={() => setSearchTerm("")}

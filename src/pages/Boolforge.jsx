@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { gateSymbols, IC_META, IC_TYPES } from "../data/gates";
 import { TruthTableGenerator } from "../components/TruthTable";
@@ -99,6 +100,7 @@ const Boolforge = ({
   const [dragStartPositions, setDragStartPositions] = useState({});
   const [dragStartMouse, setDragStartMouse] = useState({ x: 0, y: 0 });
   const [spacePressed, setSpacePressed] = useState(false);
+  const [selectionToolActive, setSelectionToolActive] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionStart, setSelectionStart] = useState({ x: 0, y: 0 });
   const [selectionEnd, setSelectionEnd] = useState({ x: 0, y: 0 });
@@ -729,18 +731,27 @@ const Boolforge = ({
       const isShift = e.shiftKey;
       const isMiddleClick = e.button === 1;
       
-      if (spacePressed || isShift || isMiddleClick) {
+      // Middle click, Space held, or Shift always pans
+      if (spacePressed || isMiddleClick) {
         setIsPanning(true);
         setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
       } else if (e.button === 0) {
-        setIsSelecting(true);
-        setSelectionStart({ x: startX, y: startY });
-        setSelectionEnd({ x: startX, y: startY });
-        setSelectionStartIds(isCtrl ? selectedGateIds : []);
-        
-        if (!isCtrl) {
-          setSelectedGateIds([]);
-          setSelectedGate(null);
+        // When selection tool is OFF (default): left-drag pans the canvas
+        // When selection tool is ON or Shift held: left-drag draws a selection rectangle
+        if (!selectionToolActive && !isShift) {
+          setIsPanning(true);
+          setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+        } else {
+          // Selection mode: box-select
+          setIsSelecting(true);
+          setSelectionStart({ x: startX, y: startY });
+          setSelectionEnd({ x: startX, y: startY });
+          setSelectionStartIds(isCtrl ? selectedGateIds : []);
+          
+          if (!isCtrl) {
+            setSelectedGateIds([]);
+            setSelectedGate(null);
+          }
         }
       }
     }
@@ -1445,6 +1456,34 @@ const Boolforge = ({
       <div className="sidebar">
         <h2>Circuit Forge</h2>
 
+        {/* ── Selection Tool Toggle ── */}
+        <button
+          onClick={() => setSelectionToolActive((v) => !v)}
+          title={selectionToolActive ? "Selection Tool ON — click to switch to Pan mode" : "Selection Tool OFF — click to enable box-select"}
+          style={{
+            width: "100%",
+            padding: "10px 14px",
+            marginBottom: "16px",
+            background: selectionToolActive ? "var(--accent-primary, #00ff88)" : "transparent",
+            color: selectionToolActive ? "var(--bg-dark, #0a0e1a)" : "var(--accent-primary, #00ff88)",
+            border: "2px solid var(--accent-primary, #00ff88)",
+            borderRadius: "4px",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "12px",
+            fontWeight: "700",
+            letterSpacing: "1px",
+            textTransform: "uppercase",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+          }}
+        >
+          <span style={{ fontSize: "16px" }}>{selectionToolActive ? "✦" : "⬚"}</span>
+          {selectionToolActive ? "Selection ON" : "Selection OFF"}
+        </button>
+
         {simplifiedExpression && (
           <div className="simplified-expression-display">
             <h3>📐 K-Map Simplified Expression</h3>
@@ -1525,8 +1564,9 @@ const Boolforge = ({
           <p><strong>Controls:</strong></p>
           <p>• Click buttons to add components</p>
           <p>• Drag gates to move them (Group Drag supported!)</p>
-          <p>• Drag empty space to select multiple components</p>
-          <p>• Hold <strong>Space</strong> / <strong>Shift</strong> or drag with <strong>Middle Button</strong> to pan</p>
+          <p>• <strong>Drag empty space</strong> to pan the canvas (default)</p>
+          <p>• Enable <strong>⬚ Selection Tool</strong> (top-left overlay) to box-select components</p>
+          <p>• Hold <strong>Space</strong> or drag with <strong>Middle Button</strong> to pan anytime</p>
           <p>• Ctrl + Click to add/remove individual gates</p>
           <p>• Click output dot → input dot to wire</p>
           <p>• Right-click wire to delete it</p>
@@ -1561,7 +1601,7 @@ const Boolforge = ({
           }}
           style={{
             pointerEvents: "auto",
-            cursor: isPanning ? "grabbing" : (spacePressed ? "grab" : "crosshair"),
+            cursor: isPanning ? "grabbing" : (spacePressed ? "grab" : (selectionToolActive ? "crosshair" : "grab")),
           }}
         />
 
@@ -1717,6 +1757,19 @@ const Boolforge = ({
 
         {/* ── Floating canvas controls overlay (mobile-friendly) ── */}
         <div className="canvas-overlay-controls">
+          <button
+            className={`canvas-overlay-btn${selectionToolActive ? " canvas-overlay-btn--active" : ""}`}
+            onClick={() => setSelectionToolActive((v) => !v)}
+            title={selectionToolActive ? "Selection Tool ON — click to switch to Pan mode" : "Selection Tool OFF — click to enable box-select"}
+            onTouchEnd={(e) => { e.preventDefault(); setSelectionToolActive((v) => !v); }}
+            style={{
+              background: selectionToolActive ? "var(--accent-primary, #7c3aed)" : undefined,
+              color: selectionToolActive ? "#fff" : undefined,
+              borderColor: selectionToolActive ? "var(--accent-primary, #7c3aed)" : undefined,
+            }}
+          >
+            ⬚
+          </button>
           <button
             className="canvas-overlay-btn"
             onClick={fitToView}
@@ -2040,3 +2093,5 @@ const Boolforge = ({
 };
 
 export default Boolforge;
+
+

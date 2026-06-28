@@ -673,6 +673,16 @@
   border-radius: 1rem;
   padding: 0.8rem 0.9rem;
   color: #fff;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.problems-banner-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+}
+
+.problems-banner-card:active {
+  transform: translateY(-2px) scale(1.00);
 }
 
 .problems-banner-card span {

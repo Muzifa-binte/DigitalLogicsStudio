@@ -289,6 +289,28 @@ const problemTopicLandingMap = {
       },
     ],
   },
+  "combinational-circuits": {
+    group: "Combinational Circuits",
+    title: "Combinational Circuit Problems",
+    description:
+      "Practice designing and analyzing combinational circuits like encoders, decoders, multiplexers, demultiplexers, and logic gates.",
+    links: [
+      { to: "/boolforge", label: "Circuit Forge Lab" },
+      { to: "/encoder", label: "Encoder Studio" },
+      { to: "/decoder", label: "Decoder Studio" },
+    ],
+  },
+  "memory-systems": {
+    group: "Memory Systems",
+    title: "Memory System Problems",
+    description:
+      "Practice memory decoding, RAM array structure, ROM/PLA programming, and read/write cycle timing.",
+    links: [
+      { to: "/memory/basics", label: "Memory basics tutorial" },
+      { to: "/memory/programmable-logic-array", label: "PLA programming lab" },
+      { to: "/memory/random-access-memory", label: "RAM interface lab" },
+    ],
+  },
 };
 
 const monthLabel = (date) =>
@@ -531,14 +553,19 @@ export default function ProblemsPage() {
   };
 
   const handleBannerCardClick = (card) => {
-    if (card.filterGroup) {
+    if (card.path) {
+      navigate(card.path);
+    } else if (card.topicSlug) {
+      navigate(`/problems/${card.topicSlug}`);
+    } else if (card.filterGroup) {
       setActiveGroup(card.filterGroup);
       setTopicFilter(card.filterGroup);
-      trackPracticeEngagement("banner_card_click", {
-        card_title: card.title,
-        filter_group: card.filterGroup,
-      });
     }
+
+    trackPracticeEngagement("banner_card_click", {
+      card_title: card.title,
+      filter_group: card.filterGroup,
+    });
   };
 
   const startAutoscroll = React.useCallback((fromStart = true) => {

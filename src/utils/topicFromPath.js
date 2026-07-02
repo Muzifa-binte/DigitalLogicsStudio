@@ -1,4 +1,4 @@
-const TOPIC_OPTIONS = [
+const DLD_TOPIC_OPTIONS = [
   { value: "boolean-algebra", label: "Boolean Algebra" },
   { value: "number-systems", label: "Number Systems" },
   { value: "arithmetic-circuits", label: "Arithmetic Circuits" },
@@ -6,8 +6,27 @@ const TOPIC_OPTIONS = [
   { value: "sequential-circuits", label: "Sequential Circuits" },
 ];
 
+const COAL_TOPIC_OPTIONS = [
+  { value: "coal-syntax", label: "COAL Syntax" },
+  { value: "registers-memory", label: "Registers & Memory" },
+  { value: "control-flow", label: "Control Flow" },
+  { value: "computer-organization", label: "Computer Organization" },
+];
+
+export function courseFromPath(pathname = "") {
+  const path = pathname.toLowerCase();
+  if (path.includes("/resources/coal") || path.startsWith("/coal")) {
+    return "coal";
+  }
+  return "dld";
+}
+
 export function topicFromPath(pathname = "") {
   const path = pathname.toLowerCase();
+
+  if (courseFromPath(pathname) === "coal") {
+    return "computer-organization";
+  }
 
   if (
     path.startsWith("/boolean") ||
@@ -52,8 +71,13 @@ export function topicFromPath(pathname = "") {
   return "boolean-algebra";
 }
 
-export function topicLabel(slug) {
-  return TOPIC_OPTIONS.find((topic) => topic.value === slug)?.label || "Digital Logic";
+export function topicLabel(slug, course = "dld") {
+  const options = course === "coal" ? COAL_TOPIC_OPTIONS : DLD_TOPIC_OPTIONS;
+  return options.find((topic) => topic.value === slug)?.label || (course === "coal" ? "COAL" : "Digital Logic");
 }
 
-export { TOPIC_OPTIONS };
+export function courseLabel(course) {
+  return course === "coal" ? "COAL" : "DLD";
+}
+
+export { DLD_TOPIC_OPTIONS, COAL_TOPIC_OPTIONS };

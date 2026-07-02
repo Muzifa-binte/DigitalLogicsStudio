@@ -4,7 +4,12 @@ import { MessageCircle, Minus, Send, Trash2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { sendChatMessage } from "../../services/aiService";
 import { isPrerendering } from "../../utils/prerender";
-import { TOPIC_OPTIONS, topicFromPath, topicLabel } from "../../utils/topicFromPath";
+import {
+  COAL_TOPIC_OPTIONS,
+  DLD_TOPIC_OPTIONS,
+  courseFromPath,
+  topicFromPath,
+} from "../../utils/topicFromPath";
 import "./DlsMentorWidget.css";
 
 const LEVEL_OPTIONS = [
@@ -14,13 +19,26 @@ const LEVEL_OPTIONS = [
 ];
 
 const QUICK_PROMPTS = [
-  "What is a flip-flop?",
-  "Explain Boolean algebra laws",
-  "How does a full adder work?",
-  "How do I get started?",
+  { text: "What is a flip-flop?", tag: "DLD" },
+  { text: "Explain Boolean algebra laws", tag: "DLD" },
+  { text: "What is COAL syntax?", tag: "COAL" },
+  { text: "Explain fetch-decode-execute", tag: "COAL" },
 ];
 
 const LEVEL_STORAGE_KEY = "dls-mentor-level";
+const COURSE_STORAGE_KEY = "dls-mentor-course";
+const TOPIC_STORAGE_KEY = "dls-mentor-topic";
+
+function getDefaultTopicForCourse(course) {
+  return course === "coal"
+    ? COAL_TOPIC_OPTIONS[0].value
+    : DLD_TOPIC_OPTIONS[0].value;
+}
+
+function isTopicValidForCourse(topic, course) {
+  const options = course === "coal" ? COAL_TOPIC_OPTIONS : DLD_TOPIC_OPTIONS;
+  return options.some((option) => option.value === topic);
+}
 
 // Set to your image path when ready, e.g. import mentorAvatar from "../../assets/dls-mentor.png";
 const MENTOR_AVATAR_SRC = null;
@@ -52,11 +70,26 @@ function DlsMentorWidget() {
     if (typeof window === "undefined") return "intermediate";
     return window.localStorage.getItem(LEVEL_STORAGE_KEY) || "intermediate";
   });
+  const [selectedCourse, setSelectedCourse] = useState(() => {
+    if (typeof window === "undefined") return "dld";
+    return window.localStorage.getItem(COURSE_STORAGE_KEY) || "dld";
+  });
+  const [selectedTopic, setSelectedTopic] = useState(() => {
+    if (typeof window === "undefined") return "boolean-algebra";
+    return window.localStorage.getItem(TOPIC_STORAGE_KEY) || "boolean-algebra";
+  });
 
-  const currentTopic = useMemo(
+  const pathCourse = useMemo(
+    () => courseFromPath(location.pathname),
+    [location.pathname],
+  );
+
+  const pathTopic = useMemo(
     () => topicFromPath(location.pathname),
     [location.pathname],
   );
+
+  const topicOptions = selectedCourse === "coal" ? COAL_TOPIC_OPTIONS : DLD_TOPIC_OPTIONS;
 
   const learnerName = user?.name?.trim() || "Learner";
 
@@ -65,27 +98,49 @@ function DlsMentorWidget() {
   }, [level]);
 
   useEffect(() => {
+    window.localStorage.setItem(COURSE_STORAGE_KEY, selectedCourse);
+  }, [selectedCourse]);
+
+  useEffect(() => {
+    window.localStorage.setItem(TOPIC_STORAGE_KEY, selectedTopic);
+  }, [selectedTopic]);
+
+  useEffect(() => {
+    setSelectedCourse(pathCourse);
+    setSelectedTopic(pathTopic);
+  }, [pathCourse, pathTopic]);
+
+  useEffect(() => {
     if (!isOpen) return;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isOpen]);
 
   useEffect(() => {
     setRecentTopics((prev) => {
-      if (prev[0] === currentTopic) return prev;
-      const next = [currentTopic, ...prev.filter((topic) => topic !== currentTopic)];
+      if (prev[0] === selectedTopic) return prev;
+      const next = [selectedTopic, ...prev.filter((topic) => topic !== selectedTopic)];
       return next.slice(0, 3);
     });
-  }, [currentTopic]);
+  }, [selectedTopic]);
+
+  const handleCourseChange = (event) => {
+    const nextCourse = event.target.value;
+    setSelectedCourse(nextCourse);
+    if (!isTopicValidForCourse(selectedTopic, nextCourse)) {
+      setSelectedTopic(getDefaultTopicForCourse(nextCourse));
+    }
+  };
 
   const buildContext = useCallback(
     () => ({
       name: learnerName,
-      currentTopic,
+      currentCourse: selectedCourse === "coal" ? "COAL" : "DLS",
+      currentTopic: selectedTopic,
       recentTopics,
       learnerLevel: level,
       difficulty: level,
     }),
-    [learnerName, currentTopic, recentTopics, level],
+    [learnerName, selectedCourse, selectedTopic, recentTopics, level],
   );
 
   const sendMessage = useCallback(
@@ -163,7 +218,7 @@ function DlsMentorWidget() {
         <MentorAvatar className="dls-mentor-launcher__icon" iconSize={22} />
         <span className="dls-mentor-launcher__text">
           <span className="dls-mentor-launcher__title">DLS Mentor</span>
-          <span className="dls-mentor-launcher__hint">Ask AI</span>
+          <span className="dls-mentor-launcher__hint">DLS & COAL</span>
         </span>
       </button>
     );
@@ -177,7 +232,9 @@ function DlsMentorWidget() {
         <MentorAvatar className="dls-mentor-panel__avatar" iconSize={20} />
         <div className="dls-mentor-panel__title-wrap">
           <h2 className="dls-mentor-panel__title">DLS Mentor</h2>
-          <p className="dls-mentor-panel__subtitle">Your AI digital logic assistant</p>
+          <p className="dls-mentor-panel__subtitle">
+            Your AI tutor for Digital Logic (DLS) & COAL
+          </p>
         </div>
         <div className="dls-mentor-panel__actions">
           <button
@@ -202,55 +259,76 @@ function DlsMentorWidget() {
       </header>
 
       <div className="dls-mentor-panel__controls">
-        <label htmlFor="dls-mentor-level">Level</label>
-        <select
-          id="dls-mentor-level"
-          className="dls-mentor-panel__select"
-          value={level}
-          onChange={(event) => setLevel(event.target.value)}
-        >
-          {LEVEL_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <label htmlFor="dls-mentor-topic">Topic</label>
-        <select
-          id="dls-mentor-topic"
-          className="dls-mentor-panel__select"
-          value={currentTopic}
-          disabled
-          title="Topic is detected from the page you are on"
-        >
-          {TOPIC_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+        <div className="dls-mentor-panel__control">
+          <label htmlFor="dls-mentor-level">Level</label>
+          <select
+            id="dls-mentor-level"
+            className="dls-mentor-panel__select"
+            value={level}
+            onChange={(event) => setLevel(event.target.value)}
+          >
+            {LEVEL_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="dls-mentor-panel__control">
+          <label htmlFor="dls-mentor-course">Course</label>
+          <select
+            id="dls-mentor-course"
+            className="dls-mentor-panel__select"
+            value={selectedCourse}
+            onChange={handleCourseChange}
+          >
+            <option value="dld">DLD</option>
+            <option value="coal">COAL</option>
+          </select>
+        </div>
+        <div className="dls-mentor-panel__control">
+          <label htmlFor="dls-mentor-topic">Topic</label>
+          <select
+            id="dls-mentor-topic"
+            className="dls-mentor-panel__select"
+            value={selectedTopic}
+            onChange={(event) => setSelectedTopic(event.target.value)}
+          >
+            {topicOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="dls-mentor-panel__messages">
         {showWelcome && (
           <>
             <div className="dls-mentor-welcome">
-              Welcome{user?.name ? `, ${user.name}` : ""} to DLS Mentor. I can explain digital
-              logic topics, guide your learning path, and help with circuits — ask me anything
-              about {topicLabel(currentTopic)}.
+              <p>
+                Hi{user?.name ? ` ${user.name}` : ""}! Ask me about <strong>DLD</strong> or{" "}
+                <strong>COAL</strong> — pick your course and topic above, or try a quick prompt.
+              </p>
             </div>
             <div className="dls-mentor-quick-prompts">
               <span className="dls-mentor-quick-prompts__label">Quick prompts</span>
               <div className="dls-mentor-quick-prompts__grid">
                 {QUICK_PROMPTS.map((prompt) => (
                   <button
-                    key={prompt}
+                    key={prompt.text}
                     type="button"
                     className="dls-mentor-quick-prompt"
-                    onClick={() => sendMessage(prompt)}
+                    onClick={() => sendMessage(prompt.text)}
                     disabled={isSending}
                   >
-                    {prompt}
+                    <span
+                      className={`dls-mentor-prompt-tag dls-mentor-prompt-tag--${prompt.tag.toLowerCase()}`}
+                    >
+                      {prompt.tag}
+                    </span>
+                    {prompt.text}
                   </button>
                 ))}
               </div>
@@ -302,7 +380,7 @@ function DlsMentorWidget() {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type your question here..."
+            placeholder="Ask a question..."
             disabled={isSending}
             aria-label="Chat message"
           />
@@ -317,7 +395,7 @@ function DlsMentorWidget() {
         </form>
         <p className="dls-mentor-panel__brand">
           <MessageCircle size={11} style={{ verticalAlign: "middle", marginRight: 4 }} />
-          Digital Logic Studio · AI Assistant
+          Digital Logic Studio · DLS & COAL · AI Assistant
         </p>
       </footer>
     </section>

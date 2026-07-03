@@ -1,3 +1,5 @@
+import { coalTopicSlugs } from "../data/coalCourseOutline";
+
 const DLD_TOPIC_OPTIONS = [
   { value: "boolean-algebra", label: "Boolean Algebra" },
   { value: "number-systems", label: "Number Systems" },
@@ -6,12 +8,10 @@ const DLD_TOPIC_OPTIONS = [
   { value: "sequential-circuits", label: "Sequential Circuits" },
 ];
 
-const COAL_TOPIC_OPTIONS = [
-  { value: "coal-syntax", label: "COAL Syntax" },
-  { value: "registers-memory", label: "Registers & Memory" },
-  { value: "control-flow", label: "Control Flow" },
-  { value: "computer-organization", label: "Computer Organization" },
-];
+const COAL_TOPIC_OPTIONS = coalTopicSlugs.map(({ value, label }) => ({
+  value,
+  label,
+}));
 
 export function courseFromPath(pathname = "") {
   const path = pathname.toLowerCase();

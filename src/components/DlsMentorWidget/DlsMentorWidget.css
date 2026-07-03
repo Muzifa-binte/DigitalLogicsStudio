@@ -546,6 +546,20 @@
   color: #1e293b;
 }
 
+[data-theme='light'] .dls-mentor-quick-prompt:hover {
+  background: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #0f172a;
+}
+
+[data-theme='light'] .dls-mentor-msg--bot .dls-mentor-msg__bubble {
+  border-color: var(--card-border);
+}
+
+[data-theme='light'] .dls-mentor-msg__time {
+  color: var(--text-muted);
+}
+
 @media (max-width: 480px) {
   .dls-mentor-launcher,
   .dls-mentor-panel {

@@ -124,16 +124,14 @@ const Home = () => {
     },
   ];
 
-  const renderRecommendedResourceMarquee = (resources) => (
-    <div className="recommended-resource-marquee" aria-label="Recommended resource carousel">
-      <div className="recommended-resource-marquee-track">
-        {resources.concat(resources).map((resource, index) => (
-          <div key={`${resource.title}-${index}`} className="recommended-resource-pill">
-            <span>{resource.badge}</span>
-            <strong>{resource.title}</strong>
-          </div>
-        ))}
-      </div>
+  const renderRecommendedResources = (resources) => (
+    <div className="recommended-resource-row" aria-label="Recommended resources">
+      {resources.map((resource) => (
+        <div key={resource.title} className="recommended-resource-pill">
+          <span>{resource.badge}</span>
+          <strong>{resource.title}</strong>
+        </div>
+      ))}
     </div>
   );
 
@@ -214,7 +212,7 @@ const Home = () => {
                     <p>
                       Explore beginner-friendly resources, concept refreshers, and visual practice that help you move from fundamentals to fluency.
                     </p>
-                    {renderRecommendedResourceMarquee(coalResources)}
+                    {renderRecommendedResources(coalResources)}
                   </Link>
 
                   <Link to="/resources/dld" className="recommended-course-card recommended-course-card--dld recommended-course-card--link">
@@ -226,7 +224,7 @@ const Home = () => {
                     <p>
                       Clean and compact course entry with focused DLD sections, leaving the detailed topics for the DLD page itself.
                     </p>
-                    {renderRecommendedResourceMarquee(dldResources)}
+                    {renderRecommendedResources(dldResources)}
                   </Link>
                 </div>
 

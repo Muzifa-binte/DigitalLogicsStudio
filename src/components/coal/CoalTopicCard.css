@@ -305,3 +305,90 @@
     min-width: 2.2rem;
   }
 }
+
+/* ─── Light theme ─────────────────────────────────────────────────────── */
+[data-theme='light'] .coal-topic-full-btn {
+  background: rgba(124, 58, 237, 0.08);
+  border-color: rgba(124, 58, 237, 0.28);
+  color: #6d28d9;
+}
+
+[data-theme='light'] .coal-topic-full-btn:hover {
+  background: rgba(124, 58, 237, 0.14);
+}
+
+[data-theme='light'] .coal-section h4 {
+  color: #5b21b6;
+}
+
+[data-theme='light'] .coal-real-life {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(217, 119, 6, 0.25);
+}
+
+[data-theme='light'] .coal-real-life__head {
+  color: #b45309;
+}
+
+[data-theme='light'] .coal-real-life p {
+  color: var(--secondary-text);
+}
+
+[data-theme='light'] .coal-table-caption {
+  color: #7c3aed;
+}
+
+[data-theme='light'] .coal-table th {
+  background: rgba(124, 58, 237, 0.1);
+  color: #5b21b6;
+}
+
+[data-theme='light'] .coal-table th,
+[data-theme='light'] .coal-table td {
+  border-color: var(--card-border);
+}
+
+[data-theme='light'] .coal-table td {
+  color: var(--text-color);
+}
+
+[data-theme='light'] .coal-table tbody tr:nth-child(even) td {
+  background: var(--surface-inset);
+}
+
+[data-theme='light'] .coal-diagram {
+  background: var(--surface-inset);
+  border-color: rgba(124, 58, 237, 0.18);
+}
+
+[data-theme='light'] .coal-steps strong {
+  color: #6d28d9;
+}
+
+[data-theme='light'] .coal-takeaways {
+  background: rgba(124, 58, 237, 0.06);
+  border-color: rgba(124, 58, 237, 0.18);
+}
+
+[data-theme='light'] .coal-takeaways h4 {
+  color: #5b21b6;
+}
+
+[data-theme='light'] .coal-related-tool {
+  color: #7c3aed;
+}
+
+[data-theme='light'] .coal-related-tool:hover {
+  color: #6d28d9;
+}
+
+[data-theme='light'] .coal-bit--on {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+[data-theme='light'] .coal-bit--off {
+  background: var(--surface-inset);
+  color: var(--text-muted);
+}
+

@@ -738,6 +738,633 @@ const coalTopicContent = {
       to: "/number-systems/calculator",
     },
   },
+
+  "ia32-architecture": {
+    slug: "ia32-architecture",
+    level: "Intermediate",
+    duration: "5 days",
+    preview: {
+      summary:
+        "A deep dive into the Intel IA-32 processor – registers, operating modes, memory segmentation, paging, and a complete address‑translation trace.",
+      highlights: [
+        "General‑purpose registers and stack‑frame pointers",
+        "Real Mode → Protected Mode → Virtual‑8086 transitions",
+        "How segmentation and paging turn logical addresses into physical RAM",
+      ],
+    },
+    sections: [
+      // ──────────── Day 1 ────────────
+      {
+        id: "registers",
+        title: "Register Infrastructure and Foundations",
+        body: [
+          "The IA‑32 architecture contains eight 32‑bit General‑Purpose Registers. Their lower 16 bits can be accessed independently, and four of them further split into 8‑bit high/low halves.",
+        ],
+        diagram: "ia32-gpr-layout",          // EAX/AX/AH/AL diagram
+        table: {
+          caption: "General‑Purpose Registers – roles",
+          headers: ["Register", "Special function"],
+          rows: [
+            ["EAX (Accumulator)", "Arithmetic, MUL/DIV, I/O, function return values"],
+            ["EBX (Base)", "Base pointer for memory arrays / data blocks"],
+            ["ECX (Count)", "Loop counter for LOOP, REP instructions"],
+            ["EDX (Data)", "Overflow storage for 64‑bit operations, I/O port addresses"],
+            ["ESI (Source Index)", "Source pointer for string / block operations"],
+            ["EDI (Destination Index)", "Destination pointer for string / block operations"],
+            ["ESP (Stack Pointer)", "Top‑of‑stack management (see the pointer section)"],
+            ["EBP (Base Pointer)", "Fixed frame reference (see the pointer section)"],
+          ],
+        },
+        realLife: {
+          title: "Real‑life connection",
+          text: "When a function returns a value in C, it’s stored in EAX. Understanding which register does what helps you debug crashes down to the assembly instruction.",
+        },
+      },
+      {
+        id: "pointers",
+        title: "Execution Control & Stack Management Pointers",
+        body: [
+          "EIP (Instruction Pointer) holds the address of the next instruction. You cannot write directly to EIP – jumps, calls, and returns modify it implicitly.",
+          "ESP (Stack Pointer) tracks the top of the runtime stack. In IA‑32 the stack grows downward: PUSH decreases ESP by 4, POP increases it by 4.",
+          "EBP (Base Pointer) provides a stable anchor inside a function. Because ESP fluctuates, local variables and parameters are referenced via fixed EBP offsets: [EBP-4] for locals, [EBP+8] for arguments.",
+        ],
+        diagram: "ia32-stack-frame",         // Stack frame with EBP/ESP
+        realLife: {
+          title: "Real‑life connection",
+          text: "Every time a function is called, the compiler creates a stack frame using EBP. This is how debuggers show you local variables – they simply look at [EBP‑x].",
+        },
+      },
+      {
+        id: "segments",
+        title: "Segment Registers",
+        body: [
+          "Six 16‑bit segment registers isolate code, data, and stack. Their meaning changes completely between Real Mode and Protected Mode.",
+        ],
+        table: {
+          caption: "Segment registers",
+          headers: ["Register", "Purpose"],
+          rows: [
+            ["CS", "Code Segment – executable code"],
+            ["DS", "Data Segment – global / static variables"],
+            ["SS", "Stack Segment – runtime stack"],
+            ["ES, FS, GS", "Extra segments – often used by OS for thread management"],
+          ],
+        },
+      },
+
+      // ──────────── Day 2 ────────────
+      {
+        id: "modes",
+        title: "Microprocessor Operating Modes",
+        body: [
+          "IA‑32 can operate in several distinct modes that change how the CPU addresses memory and enforces protection.",
+        ],
+        diagram: "ia32-mode-transitions",    // the flowchart: Power‑on → Real → Protected ↔ V86
+        realLife: {
+          title: "Real‑life connection",
+          text: "When your PC boots, it starts in Real Mode (like a 1980s PC). The OS then switches to Protected Mode to enable 4 GB of RAM and process isolation.",
+        },
+      },
+      {
+        id: "real-mode",
+        title: "Real Mode",
+        body: [
+          "The CPU enters Real Mode on reset. It behaves like an 8086: 20‑bit address bus, 1 MB maximum addressable memory, no memory protection. Any program can crash the system.",
+        ],
+      },
+      {
+        id: "protected-mode",
+        title: "Protected Mode",
+        body: [
+          "The native state of modern 32‑bit OSes. Full 32‑bit address bus → 4 GB addressable. Hardware‑enforced privilege rings (Ring 0 = kernel, Ring 3 = user) provide isolation.",
+          "If a user‑mode program attempts an illegal operation, a General Protection Fault occurs and only that program is terminated.",
+        ],
+      },
+      {
+        id: "v86",
+        title: "Virtual‑8086 Mode",
+        body: [
+          "A sub‑mode of Protected Mode that creates safe 16‑bit sandboxes. Legacy DOS programs think they own 1 MB of memory, but I/O and memory violations are trapped and handled by the OS.",
+        ],
+      },
+
+      // ──────────── Day 3 ────────────
+      {
+        id: "segmentation",
+        title: "Memory Segmentation",
+        body: [
+          "Segmentation converts a logical address (segment:offset) into a linear address. The mechanics differ dramatically between Real and Protected Mode.",
+        ],
+        realLife: {
+          title: "Real‑life connection",
+          text: "Segmentation is why old DOS programs could only access 64 KB at a time. Understanding this helps when working with legacy embedded systems.",
+        },
+      },
+      {
+        id: "real-mode-seg",
+        title: "Real Mode Segmentation",
+        body: [
+          "Segment registers hold a 16‑bit base value. The CPU shifts it left by 4 bits (×16) and adds a 16‑bit offset to form a 20‑bit linear address.",
+        ],
+        table: {
+          caption: "Real Mode address example",
+          headers: ["Component", "Value", "Operation"],
+          rows: [
+            ["CS (segment)", "0x2000", "Shift left 4 → 0x20000"],
+            ["EIP (offset)", "0x0150", "Add offset → 0x20150"],
+            ["Linear address", "0x20150", "Physical address = linear address (no paging in Real Mode)"],
+          ],
+        },
+      },
+      {
+        id: "protected-mode-seg",
+        title: "Protected Mode Segmentation",
+        body: [
+          "Segment registers become selectors that index into the Global Descriptor Table (GDT). Each GDT entry provides a base address, limit, and access rights.",
+          "Modern OSes set all base addresses to 0 and limits to 4 GB, effectively flattening memory so linear address = offset.",
+        ],
+        diagram: "ia32-segment-selector",    // bit layout of the selector
+        table: {
+          caption: "Segment Selector fields",
+          headers: ["Field", "Bits", "Meaning"],
+          rows: [
+            ["Index", "15–3", "Row in GDT"],
+            ["TI (Table Indicator)", "2", "0=GDT, 1=LDT"],
+            ["RPL (Privilege)", "1–0", "00=Ring0, 11=Ring3"],
+          ],
+        },
+      },
+
+      // ──────────── Day 4 ────────────
+      {
+        id: "paging",
+        title: "Architectural Memory Management – Paging",
+        body: [
+          "Paging maps a linear address (already translated by segmentation) to a physical RAM location. It uses a two‑level table: Page Directory and Page Tables.",
+        ],
+        diagram: "ia32-linear-address-breakdown",  // 32‑bit linear address split
+        realLife: {
+          title: "Real‑life connection",
+          text: "Paging is why your computer can run multiple programs without them seeing each other’s memory – and why it can use more memory than physically installed (swap).",
+        },
+      },
+      {
+        id: "paging-steps",
+        title: "Two‑Tier Translation Mechanism",
+        body: [
+          "CR3 register → Page Directory (10 bits) → Page Table (10 bits) → 4 KB physical frame + offset (12 bits).",
+          "Each 4 KB block is called a page (virtual) / frame (physical).",
+        ],
+        table: {
+          caption: "Address translation steps",
+          headers: ["Step", "Bits used", "What it finds"],
+          rows: [
+            ["1. CR3", "–", "Physical address of Page Directory"],
+            ["2. Directory index", "31–22", "Page Directory Entry → Page Table base"],
+            ["3. Table index", "21–12", "Page Table Entry → 4 KB frame base"],
+            ["4. Offset", "11–0", "Exact byte inside the 4 KB frame"],
+          ],
+        },
+      },
+      {
+        id: "benefits",
+        title: "Virtualization & Demand Paging Benefits",
+        body: [
+          "Paging eliminates external fragmentation and supports demand paging (swap): inactive pages are moved to disk and reloaded on a page fault.",
+        ],
+      },
+
+      // ──────────── Day 5 ────────────
+      {
+        id: "comparison",
+        title: "Segmentation vs Paging Comparison",
+        body: [
+          "Both mechanisms work together, but they serve different purposes.",
+        ],
+        table: {
+          caption: "Segmentation vs Paging",
+          headers: ["Parameter", "Segmentation", "Paging"],
+          rows: [
+            ["Primary driver", "Logical structure (programmer)", "Physical optimization (OS/RAM)"],
+            ["Block size", "Variable (1 B – 4 GB)", "Fixed 4 KB"],
+            ["Visibility", "Visible to compiler/assembler", "Hidden from applications"],
+            ["Fragmentation", "External (gaps between segments)", "Internal (wasted space inside page)"],
+          ],
+        },
+      },
+      {
+        id: "lifecycle",
+        title: "Complete Address Lifecycle Trace",
+        body: [
+          "MOV EAX, [EBX+0x20] → Logical address (DS:offset) → Segmentation (GDT) → Linear address → Paging (CR3) → Physical address on RAM bus.",
+        ],
+        diagram: "ia32-address-lifecycle",
+        realLife: {
+          title: "Real life connection",
+          text: "Every memory access your program makes passes through this full pipeline. Hardware debuggers and hypervisors hook into exactly these translation steps.",
+        },
+      },
+    ],
+    keyTakeaways: [
+      "EAX, EBX, ECX, EDX, ESI, EDI, ESP, EBP are the 8 GPRs – each with a specific role.",
+      "EIP cannot be written directly; control flow changes it.",
+      "Real Mode = 1 MB, no protection. Protected Mode = 4 GB, rings, isolation.",
+      "Segmentation: Real Mode = segment×16+offset; Protected Mode = GDT descriptor + offset.",
+      "Paging uses a 2‑level table (directory + table) to map 4 KB virtual pages to physical frames.",
+      "Modern OSes use a flat memory model (segments base=0) and rely on paging for protection.",
+    ],
+  },
+
+  "directives-macros": {
+    slug: "directives-macros",
+    level: "Intermediate",
+    duration: "4 days",
+    preview: {
+      summary:
+        "Learn to structure a clean assembly program with .DATA, .CODE and .STACK, define constants and variables, write reusable macros, and understand the complete build pipeline from .ASM to running in RAM.",
+      highlights: [
+        "Instructions vs assembler directives – what the CPU sees vs what the assembler sees",
+        "Data allocation with DB, DW, DD and operators like EQU, OFFSET, PTR",
+        "Macros vs procedures – compile‑time expansion vs runtime call/return",
+        "The three‑step build: Assembler → Linker → Loader",
+      ],
+    },
+    sections: [
+      // ──────────── Day 1 ────────────
+      {
+        id: "contrast",
+        title: "Assembler Directives vs. Instructions",
+        body: [
+          "Assembly source files contain two completely different kinds of statements: instructions that become actual machine code, and directives that only guide the assembler.",
+        ],
+        table: {
+          caption: "Instructions vs Directives – a side‑by‑side view",
+          headers: ["Property", "Assembly Instructions", "Assembler Directives"],
+          rows: [
+            ["What they do", "Real CPU operations (MOV, ADD, JMP …)", "Commands for the assembler (.DATA, .CODE, EQU …)"],
+            ["Translate to machine code?", "Yes – every instruction becomes bytes", "No – they never appear in the final binary"],
+            ["Who executes them?", "The physical CPU at runtime", "The assembler at compile time"],
+            ["Affect registers/flags?", "Yes", "No"],
+          ],
+        },
+        realLife: {
+          title: "Real‑life connection",
+          text: "Think of directives as stage directions for a play – they tell the crew where to place the furniture, but the audience (the CPU) never sees them.",
+        },
+      },
+      {
+        id: "segment-layout",
+        title: "Standard Three‑Segment Program Layout",
+        body: [
+          "A classic IA‑32 program is split into three segments. Each serves a distinct purpose, and modern OSes enforce different permissions on each.",
+        ],
+        diagram: "segment-layout", // the block diagram: .STACK, .DATA, .CODE
+        table: {
+          caption: "The three segment shortcuts",
+          headers: ["Segment", "Typical usage", "Permissions"],
+          rows: [
+            [".STACK", "LIFO memory for calls, returns, locals", "Read/Write"],
+            [".DATA", "Static variables, strings, arrays", "Read/Write (not executable)"],
+            [".CODE", "Executable instructions", "Read/Execute (not writable)"],
+          ],
+        },
+        realLife: {
+          title: "Real‑life connection",
+          text: "The separation of code and data is why most buffer‑overflow exploits try to inject code into the stack or data sections and then trick the CPU into executing it.",
+        },
+      },
+
+      // ──────────── Day 2 ────────────
+      {
+        id: "allocation",
+        title: "Data Allocation – DB, DW, DD",
+        body: [
+          "You tell the assembler exactly how many bytes to reserve and what to put in them using DB, DW, and DD. The `?` token leaves memory uninitialised.",
+        ],
+        table: {
+          caption: "Allocation directives at a glance",
+          headers: ["Directive", "Allocates", "Example"],
+          rows: [
+            ["DB (Define Byte)", "1 byte (8 bits)", "age DB 25"],
+            ["DW (Define Word)", "2 bytes (16 bits)", "matrix DW ?"],
+            ["DD (Define Doubleword)", "4 bytes (32 bits)", "big DD 12345678h"],
+            ["DUP operator", "Multiple copies", "buffer DB 50 DUP(0)"],
+          ],
+        },
+        realLife: {
+          title: "Real‑life connection",
+          text: "When you declare a string in any language, the compiler reserves a block of DBs behind the scenes – one byte per character.",
+        },
+      },
+      {
+        id: "operators",
+        title: "Assembly Operators: EQU, OFFSET, PTR",
+        body: [
+          "These operators don’t generate code; they control how the assembler interprets numbers and addresses.",
+        ],
+        table: {
+          caption: "Three essential operators",
+          headers: ["Operator", "Meaning", "Example"],
+          rows: [
+            ["EQU", "Text‑replacement constant (no memory used)", "BUFFER_SIZE EQU 1024"],
+            ["OFFSET", "Returns the 32‑bit address of a variable", "MOV ESI, OFFSET myWord"],
+            ["PTR", "Overrides the default size of a memory operand", "MOV BYTE PTR [ESI], 55h"],
+          ],
+        },
+        realLife: {
+          title: "Real‑life connection",
+          text: "OFFSET is like getting the street address of a house; without it, you’d be talking about whatever is inside the house.",
+        },
+      },
+      {
+        id: "procedures",
+        title: "Procedures (PROC and ENDP)",
+        body: [
+          "PROC and ENDP mark reusable blocks of code. You call them with CALL, which pushes the return address onto the stack, and RET, which pops it back into EIP.",
+        ],
+        diagram: "proc-call-flow", // simplified call/return sequence
+        realLife: {
+          title: "Real‑life connection",
+          text: "Every function in C compiles to a PROC block. The CALL/RET pair is exactly how your program jumps into a function and returns to the caller.",
+        },
+      },
+
+      // ──────────── Day 3 ────────────
+      {
+        id: "macro-def",
+        title: "Macro Architecture",
+        body: [
+          "A macro is a named block of code (MACRO … ENDM) that the assembler **copies and pastes** at every call site before generating machine code. It uses positional parameters for flexibility.",
+        ],
+        table: {
+          caption: "Example macro definition",
+          headers: ["Macro line", "Explanation"],
+          rows: [
+            ["mCopyData MACRO src, dest", "Define macro with two parameters"],
+            ["PUSH EAX", "Save original EAX value"],
+            ["MOV EAX, src", "Move source into accumulator"],
+            ["MOV dest, EAX", "Write accumulator to destination"],
+            ["POP EAX", "Restore EAX"],
+            ["ENDM", "End of macro definition"],
+          ],
+        },
+      },
+      {
+        id: "macro-vs-proc",
+        title: "Macros vs Procedures – A Side‑by‑Side Comparison",
+        body: [
+          "Both let you reuse code, but they work at completely different times and have different trade‑offs.",
+        ],
+        table: {
+          caption: "Macro vs Procedure",
+          headers: ["Aspect", "Macro", "Procedure"],
+          rows: [
+            ["Processing time", "Compile time (assembler)", "Runtime (CPU)"],
+            ["Binary size", "Increases with every call (code duplication)", "Code exists once, calls add minimal overhead"],
+            ["Execution speed", "No call/return overhead", "CALL/RET consume a few cycles"],
+            ["Parameter passing", "Literal text replacement", "Registers, stack, or memory pointers"],
+          ],
+        },
+      },
+      {
+        id: "conditional",
+        title: "Conditional Assembly",
+        body: [
+          "Directives like IF, ELSE, ENDIF, IFDEF let you include or exclude blocks of code based on compile‑time flags. This is perfect for debug builds or platform‑specific sections.",
+        ],
+        table: {
+          caption: "Conditional assembly example",
+          headers: ["Directive", "What happens"],
+          rows: [
+            ["DEBUG_MODE EQU 1", "Define a flag"],
+            ["IF DEBUG_MODE", "Only assemble the following lines if the flag is true"],
+            ["CALL LogSystemDiagnostics", "This call disappears from the final binary when DEBUG_MODE=0"],
+            ["ENDIF", "End of conditional block"],
+          ],
+        },
+        realLife: {
+          title: "Real‑life connection",
+          text: "Game developers use conditional assembly to include performance counters in debug builds that are completely absent in the shipped product – zero runtime cost.",
+        },
+      },
+
+      // ──────────── Day 4 ────────────
+      {
+        id: "build-pipeline",
+        title: "The Build Pipeline",
+        body: [
+          "Turning a plain‑text .ASM file into a running program involves three distinct stages. Understanding them helps you diagnose ‘undefined symbol’ and ‘unresolved external’ errors.",
+        ],
+        diagram: "build-pipeline", // flowchart: .ASM → Assembler → .OBJ → Linker → .EXE → Loader → RAM
+        table: {
+          caption: "Stages of the build",
+          headers: ["Stage", "Tool", "What it does"],
+          rows: [
+            ["1. Assembly", "MASM / NASM", "Checks syntax, converts mnemonics to opcodes, produces .OBJ"],
+            ["2. Linking", "LINK.EXE / ld", "Resolves symbols, merges segments, produces .EXE"],
+            ["3. Loading", "OS Loader", "Maps .CODE, .DATA, .STACK into memory, sets CS:EIP and SS:ESP"],
+          ],
+        },
+      },
+      {
+        id: "demo-template",
+        title: "Practical Demonstration Template",
+        body: [
+          "Below is a minimal but complete IA‑32 program that uses all the concepts covered. Study it as a reference for your own experiments.",
+        ],
+        diagram: "demo-program-template", // the full code template as a styled diagram/SVG
+        realLife: {
+          title: "Real‑life connection",
+          text: "This template is the ‘Hello World’ of assembly programming. Once you understand every line, you’re ready to write real low‑level code for drivers, emulators, and embedded systems.",
+        },
+      },
+    ],
+    keyTakeaways: [
+      "Directives guide the assembler; instructions run on the CPU.",
+      ".STACK, .DATA, .CODE segment your program into logical, protected regions.",
+      "DB, DW, DD control memory allocation; EQU, OFFSET, PTR control symbols and addressing.",
+      "Procedures use CALL/RET and a single copy of code; macros duplicate code inline at compile time.",
+      "The build chain is Assembler → Linker → Loader – each stage converts your source closer to raw bytes in RAM.",
+    ],
+  },
+
+  "hw-sw-interface": {
+    slug: "hw-sw-interface",
+    level: "Intermediate",
+    duration: "3 days",
+    preview: {
+      summary:
+        "Trace a line of C code all the way down to raw binary bytes in RAM. Understand how the compiler, assembler, linker, and loader cooperate, and how high‑level structures (if, functions, variables) map to assembly and stack frames.",
+      highlights: [
+        "The full translation chain: C → Assembly → Object file → Executable → Running memory",
+        "How `if` statements and local variables turn into CMP, JMP, and stack offsets",
+        "Calling conventions (__cdecl vs __stdcall) and why they matter for crashes",
+        "Why the memory wall and word size shape software design",
+      ],
+    },
+    sections: [
+  
+      {
+        id: "translation-chain",
+        title: "The Translation Chain & Compilation Pipeline",
+        body: [
+          "A high‑level language statement like `x = a + b;` goes through four distinct stages before it becomes electrical signals on the CPU.",
+        ],
+        diagram: "translation-pipeline", 
+        table: {
+          caption: "The four stages of translation",
+          headers: ["Stage", "Tool", "What it produces"],
+          rows: [
+            ["Compiler", "GCC / Clang / MSVC", "Assembly language text"],
+            ["Assembler", "MASM / NASM", "Object file (.OBJ) – machine code with unresolved symbols"],
+            ["Linker", "LINK / ld", "Executable (.EXE) – all addresses resolved"],
+            ["Loader", "OS (PE/ELF loader)", "Program in physical RAM with EIP pointed to entry"],
+          ],
+        },
+        realLife: {
+          title: "Real‑life connection",
+          text: "When you hit ‘Build’ in an IDE, you’re running the compiler and assembler. When you launch the app, the loader maps it into memory. Crashes at launch are often loader errors – missing DLLs, wrong bitness.",
+        },
+      },
+
+      {
+        id: "control-structures",
+        title: "Mapping Control Structures to Assembly",
+        body: [
+          "CPUs have no `if`, `for`, or `while`. The compiler translates them into comparisons (CMP) and conditional jumps (JE, JNE, JG, JL).",
+        ],
+        table: {
+          caption: "if else in C → Assembly mapping",
+          headers: ["C code", "Assembly translation"],
+          rows: [
+            ["if (status == 5)", "CMP EAX, 5 ; JNE L_Else"],
+            ["count = 10;", "MOV DWORD PTR [count], 10"],
+            ["else count = 0;", "L_Else: MOV DWORD PTR [count], 0"],
+          ],
+        },
+        realLife: {
+          title: "Real life connection",
+          text: "Debuggers show you the assembly behind your C code. That JNE instruction is why a single `=` vs `==` bug can set a flag incorrectly and send execution down the wrong branch.",
+        },
+      },
+      {
+        id: "stack-frame",
+        title: "Variables and the Stack Frame",
+        body: [
+          "Every function call creates a stack frame bounded by EBP (base) and ESP (top). Parameters are at positive offsets from EBP; local variables at negative offsets.",
+        ],
+        diagram: "stack-frame-layout", // the classic EBP/ESP drawing
+        table: {
+          caption: "Accessing data in a stack frame",
+          headers: ["Item", "Typical offset", "How it’s used"],
+          rows: [
+            ["Parameter 1", "[EBP + 8]", "Input to the function"],
+            ["Return address", "[EBP + 4]", "Pushed by CALL"],
+            ["Saved old EBP", "[EBP]", "Links to caller’s frame"],
+            ["Local variable 1", "[EBP - 4]", "Temporary storage within function"],
+            ["Local variable 2", "[EBP - 8]", "Further temporaries"],
+          ],
+        },
+        realLife: {
+          title: "Real life connection",
+          text: "When a function returns, ESP and EBP must be restored exactly. A mistake here – like a buffer overflow into [EBP] – corrupts the whole call chain and is the root of many security exploits.",
+        },
+      },
+
+      {
+        id: "calling-conventions",
+        title: "Calling Conventions & ABI",
+        body: [
+          "The ABI (Application Binary Interface) is a contract between functions: who pushes parameters, in what order, and who cleans the stack.",
+        ],
+        table: {
+          caption: "__cdecl vs __stdcall",
+          headers: ["Aspect", "__cdecl (C default)", "__stdcall (Win32 API)"],
+          rows: [
+            ["Parameter order", "Right‑to‑left on stack", "Right‑to‑left on stack"],
+            ["Stack cleanup", "Caller (ADD ESP, x after call)", "Callee (RET x inside function)"],
+            ["Variable arguments?", "Yes (e.g., printf)", "No"],
+            ["Binary size impact", "Larger code at each call site", "Smaller overall code"],
+          ],
+        },
+        realLife: {
+          title: "Real‑life connection",
+          text: "If you mix conventions (e.g., calling a __stdcall function as __cdecl), the stack pointer ends up in the wrong place. The program may run for a while, then crash mysteriously or corrupt data.",
+        },
+      },
+      {
+        id: "hardware-constraints",
+        title: "Hardware Constraints That Shape Software",
+        body: [
+          "Software isn’t free – physical limits like cache size and register width directly affect performance and even programming language design.",
+        ],
+        table: {
+          caption: "Two critical hardware realities",
+          headers: ["Constraint", "Effect on software"],
+          rows: [
+            ["Memory wall (cache miss)", "Random memory access patterns can be 100× slower than sequential. Cache‑friendly data layouts are essential."],
+            ["32‑bit word size", "Operations on 64‑bit types require multiple instructions (EDX:EAX pairs), increasing code size and execution time."],
+          ],
+        },
+      },
+
+      // ──────────── Capstone Lab ────────────
+      {
+        id: "capstone-lab",
+        title: "Capstone Lab: Translation Tracer",
+        body: [
+          "Here is a tiny C function and its complete IA‑32 translation, including the raw machine code bytes that the CPU actually fetches.",
+        ],
+        table: {
+          caption: "ComputeSquare function – annotated assembly trace",
+          headers: ["Assembly instruction", "Purpose", "Machine code (hex)"],
+          rows: [
+            ["PUSH EBP", "Save old base pointer", "55"],
+            ["MOV EBP, ESP", "Set new frame base", "8B EC"],
+            ["SUB ESP, 4", "Reserve space for local 'result'", "83 EC 04"],
+            ["MOV EAX, [EBP+8]", "Fetch 'base' parameter", "8B 45 08"],
+            ["IMUL EAX, EAX", "EAX = base × base", "0F AF C0"],
+            ["MOV [EBP-4], EAX", "Store into local variable", "89 45 FC"],
+            ["MOV EAX, [EBP-4]", "Load return value into EAX", "8B 45 FC"],
+            ["MOV ESP, EBP", "Collapse stack frame", "8B E5"],
+            ["POP EBP", "Restore caller’s base pointer", "5D"],
+            ["RET", "Return to caller", "C3"],
+          ],
+        },
+      },
+
+      // ──────────── Practice Assessment ────────────
+      {
+        id: "practice-questions",
+        title: "Practice Verification Questions",
+        body: [
+          "Test your understanding with these diagnostic scenarios drawn from real debugging situations.",
+        ],
+        table: {
+          caption: "Question & detailed answer",
+          headers: ["Question", "Answer"],
+          rows: [
+            [
+              "Q1: A function crashes because the caller omitted `ADD ESP, x` under __cdecl. What happens to the stack?",
+              "ESP remains stuck at a lower address. Subsequent PUSH/CALL operations write over other memory, corrupting variables and return addresses.",
+            ],
+            [
+              "Q2: After changing one string literal in a 20,000‑line C project, which tools must run from scratch?",
+              "Only the compiler for that single file must regenerate its .OBJ. The linker, however, must run completely anew to re‑resolve all addresses and string tables across the whole executable.",
+            ],
+          ],
+        },
+      },
+    ],
+    keyTakeaways: [
+      "Compiler → Assembler → Linker → Loader: each step transforms your code closer to physical RAM execution.",
+      "`if` becomes CMP + conditional jump; loops become CMP + JMP back.",
+      "Local variables live at negative EBP offsets; function parameters at positive ones.",
+      "Calling conventions define who cleans the stack – mismatches cause stack corruption.",
+      "Hardware constraints (cache misses, 32‑bit word size) directly impact software performance.",
+    ],
+  },
+
 };
 
 function getCoalTopicContent(slug) {

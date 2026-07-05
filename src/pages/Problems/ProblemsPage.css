@@ -673,10 +673,10 @@
   border-radius: 1rem;
   padding: 0.8rem 0.9rem;
   color: #fff;
-<<<<<<< HEAD
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
+  width: 250px;
 }
 
 .problems-banner-card:hover,
@@ -688,9 +688,6 @@
 
 .problems-banner-card:active {
   transform: translateY(0) scale(0.98);
-=======
-  width: 250px;
->>>>>>> upstream/main
 }
 
 .problems-banner-card span {
@@ -2644,5 +2641,3 @@
     font-size: 1rem;
   }
 }
-=======
->>>>>>> upstream/main

@@ -1,53 +1,44 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, BookOpen, Clock, GraduationCap } from "lucide-react";
-import { Navbar } from "../Home/Navbar";
-import CoalFooter from "../../components/coal/CoalFooter";
-import { useTheme } from "../../context/ThemeContext";
+import { BookOpen, Clock, GraduationCap } from "lucide-react";
+import CoalLayout from "./CoalLayout";
 import CoalTopicContent from "../../components/coal/CoalTopicContent";
 import { getCoalTopicContent } from "../../data/coalTopicContent";
-import { getCoalModuleBySlug, getCoalTopicPath } from "../../utils/coalCourseUtils";
+import { getCoalModuleBySlug } from "../../utils/coalCourseUtils";
 import "./CoalPages.css";
+import "./CoalLayout.css";
 
 function CoalTopicPage() {
-  const { theme, toggle: toggleTheme } = useTheme();
   const { slug } = useParams();
   const resolved = getCoalModuleBySlug(slug);
   const content = getCoalTopicContent(slug);
 
   if (!resolved) {
     return (
-      <div className="coal-page">
-        <Navbar toggleTheme={toggleTheme} theme={theme} />
-        <main className="coal-page__main coal-page__main--narrow">
-          <p>Topic not found.</p>
-          <Link to="/resources/coal" className="coal-btn coal-btn--ghost">
-            <ArrowLeft size={16} /> Back to COAL course
-          </Link>
-        </main>
-        <CoalFooter showPartAnchors={false} />
-      </div>
+      <CoalLayout title="Topic not found" subtitle="COAL theory">
+        <p>This topic is not in the course outline yet.</p>
+        <Link to="/resources/coal/theory" className="coal-btn coal-btn--ghost">
+          Back to theory
+        </Link>
+      </CoalLayout>
     );
   }
 
-  const { module, prev, next } = resolved;
+  const { module } = resolved;
+  const summary =
+    content?.preview?.summary ||
+    module.summaryLine ||
+    module.outcomes?.[0] ||
+    "Lesson content for this COAL topic.";
 
   return (
-    <div className="coal-page">
-      <Navbar toggleTheme={toggleTheme} theme={theme} />
-
-      <main className="coal-page__main coal-page__main--narrow">
-        <nav className="coal-breadcrumb" aria-label="Breadcrumb">
-          <Link to="/resources/coal">COAL Course</Link>
-          <span>/</span>
-          <span>{module.title}</span>
-        </nav>
-
-        <header className="coal-topic-hero">
-          <p className="coal-topic-hero__part">
-            Part {module.partNumber} · {module.partTitle}
-          </p>
-          <h1>{module.title}</h1>
+    <CoalLayout
+      title={module.title}
+      subtitle={`Part ${module.partNumber} · ${module.partTitle}`}
+      intro={summary}
+    >
+      <div className="coal-topic-shell-content">
+        <div className="coal-topic-hero coal-topic-hero--embedded">
           <div className="coal-topic-hero__meta">
             <span>
               <GraduationCap size={15} /> {content?.level || module.partLevel}
@@ -56,7 +47,7 @@ function CoalTopicPage() {
               <Clock size={15} /> {content?.duration || module.duration}
             </span>
           </div>
-        </header>
+        </div>
 
         {content ? (
           <CoalTopicContent content={content} />
@@ -70,61 +61,8 @@ function CoalTopicPage() {
             </p>
           </div>
         )}
-
-        <footer className="coal-topic-nav">
-          {prev ? (
-            <Link to={getCoalTopicPath(prev.slug)} className="coal-topic-nav__link">
-              <span className="coal-topic-nav__icon" aria-hidden="true">
-                <ArrowLeft size={18} />
-              </span>
-              <span className="coal-topic-nav__copy">
-                <small>Previous</small>
-                <strong>{prev.title}</strong>
-              </span>
-            </Link>
-          ) : (
-            <Link to="/resources/coal" className="coal-topic-nav__link">
-              <span className="coal-topic-nav__icon" aria-hidden="true">
-                <ArrowLeft size={18} />
-              </span>
-              <span className="coal-topic-nav__copy">
-                <small>Course path</small>
-                <strong>Back to full course</strong>
-              </span>
-            </Link>
-          )}
-          {next ? (
-            <Link
-              to={getCoalTopicPath(next.slug)}
-              className="coal-topic-nav__link coal-topic-nav__link--next"
-            >
-              <span className="coal-topic-nav__copy">
-                <small>Next lesson</small>
-                <strong>{next.title}</strong>
-              </span>
-              <span className="coal-topic-nav__icon" aria-hidden="true">
-                <ArrowRight size={18} />
-              </span>
-            </Link>
-          ) : (
-            <Link
-              to="/resources/coal"
-              className="coal-topic-nav__link coal-topic-nav__link--next"
-            >
-              <span className="coal-topic-nav__copy">
-                <small>Finished</small>
-                <strong>Back to course path</strong>
-              </span>
-              <span className="coal-topic-nav__icon" aria-hidden="true">
-                <ArrowRight size={18} />
-              </span>
-            </Link>
-          )}
-        </footer>
-      </main>
-
-      <CoalFooter showPartAnchors={false} />
-    </div>
+      </div>
+    </CoalLayout>
   );
 }
 

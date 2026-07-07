@@ -213,13 +213,13 @@ function DlsMentorWidget() {
         type="button"
         className="dls-mentor-launcher"
         onClick={() => setIsOpen(true)}
-        aria-label="Open DLS Mentor chat"
-        title="DLS Mentor"
+        aria-label="Open DLS & COAL Mentor chat"
+        title="DLS & COAL Mentor"
       >
         <MentorAvatar className="dls-mentor-launcher__icon" iconSize={22} />
         <span className="dls-mentor-launcher__text">
-          <span className="dls-mentor-launcher__title">DLS Mentor</span>
-          <span className="dls-mentor-launcher__hint">DLS & COAL</span>
+          <span className="dls-mentor-launcher__title">DLS & COAL Mentor</span>
+          <span className="dls-mentor-launcher__hint">Digital Logic · Computer Organization</span>
         </span>
       </button>
     );
@@ -228,13 +228,13 @@ function DlsMentorWidget() {
   const showWelcome = messages.length === 0;
 
   return (
-    <section className="dls-mentor-panel" aria-label="DLS Mentor chat">
+    <section className="dls-mentor-panel" aria-label="DLS & COAL Mentor chat">
       <header className="dls-mentor-panel__header">
         <MentorAvatar className="dls-mentor-panel__avatar" iconSize={20} />
         <div className="dls-mentor-panel__title-wrap">
-          <h2 className="dls-mentor-panel__title">DLS Mentor</h2>
+          <h2 className="dls-mentor-panel__title">DLS & COAL Mentor</h2>
           <p className="dls-mentor-panel__subtitle">
-            Your AI tutor for Digital Logic (DLS) & COAL
+            Digital Logic (DLD) & Computer Organization & Assembly
           </p>
         </div>
         <div className="dls-mentor-panel__actions">
@@ -309,8 +309,9 @@ function DlsMentorWidget() {
           <>
             <div className="dls-mentor-welcome">
               <p>
-                Hi{user?.name ? ` ${user.name}` : ""}! Ask me about <strong>DLD</strong> or{" "}
-                <strong>COAL</strong> — pick your course and topic above, or try a quick prompt.
+                Hi{user?.name ? ` ${user.name}` : ""}! Ask me about <strong>DLD</strong> (digital logic)
+                or <strong>COAL</strong> (computer organization & assembly) — pick your course above,
+                or try a quick prompt.
               </p>
             </div>
             <div className="dls-mentor-quick-prompts">
@@ -383,7 +384,7 @@ function DlsMentorWidget() {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask a question..."
+            placeholder="Ask about DLD, COAL, circuits, or assembly…"
             disabled={isSending}
             aria-label="Chat message"
           />
@@ -398,7 +399,7 @@ function DlsMentorWidget() {
         </form>
         <p className="dls-mentor-panel__brand">
           <MessageCircle size={11} style={{ verticalAlign: "middle", marginRight: 4 }} />
-          Digital Logic Studio · DLS & COAL · AI Assistant
+          Digital Logic Studio · DLD & COAL · AI Assistant
         </p>
       </footer>
     </section>

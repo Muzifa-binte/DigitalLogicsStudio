@@ -36,7 +36,10 @@ function CoalFooter({ showPartAnchors = true }) {
           </p>
           <Link to="/resources/coal" className="coal-footer__course-link">
             <BookOpen size={15} />
-            View full course path
+            COAL home
+          </Link>
+          <Link to="/resources/coal/theory" className="coal-footer__course-link coal-footer__course-link--secondary">
+            Theory path
           </Link>
         </div>
 
@@ -50,7 +53,7 @@ function CoalFooter({ showPartAnchors = true }) {
                     Part {part.part} — {part.title}
                   </a>
                 ) : (
-                  <Link to={`/resources/coal#coal-part-${part.id}`} className="coal-footer__link">
+                  <Link to={`/resources/coal/theory#coal-part-${part.id}`} className="coal-footer__link">
                     Part {part.part} — {part.title}
                   </Link>
                 )}

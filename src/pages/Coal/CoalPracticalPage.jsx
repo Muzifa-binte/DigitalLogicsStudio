@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
+  ArrowUpRight,
   Cpu,
   FlaskConical,
   Terminal,
@@ -20,24 +21,34 @@ const COAL_ACCENT = coalCourseMeta.accent;
 
 const PLANNED_PRACTICALS = [
   {
+    key: "instruction-trace-lab",
     title: "Instruction trace lab",
-    description: "Step through fetch–decode–execute for short programs by hand.",
+    description:
+      "Step through fetch–decode–execute for short programs by hand.",
     icon: Terminal,
+    ready: true,
+    path: "/resources/coal/practical/instruction-trace-lab",
   },
   {
+    key: "alu-flags-simulator",
     title: "ALU & flags simulator",
     description: "Practice arithmetic and see how ZF, CF, OF, and SF change.",
     icon: Cpu,
+    ready: false,
   },
   {
+    key: "stack-frame-exercises",
     title: "Stack frame exercises",
     description: "Trace PUSH, POP, CALL, and RET with visual stack diagrams.",
     icon: FlaskConical,
+    ready: false,
   },
   {
+    key: "assembly-drills",
     title: "Assembly drills",
     description: "Short COAL/MASM-style programs with guided solutions.",
     icon: Wrench,
+    ready: false,
   },
 ];
 
@@ -56,16 +67,22 @@ function CoalPracticalPage() {
             <span className="learning-resources-badge">Practical</span>
             <h1>Practical labs & exercises</h1>
             <p>
-              Hands-on work to pair with theory — tracing programs, using simulators,
-              and building assembly confidence.
+              Hands-on work to pair with theory — tracing programs, using
+              simulators, and building assembly confidence.
             </p>
 
             <div className="learning-resources-hero-actions">
-              <Link to="/resources/coal" className="learning-resources-btn primary">
+              <Link
+                to="/resources/coal"
+                className="learning-resources-btn primary"
+              >
                 <ArrowLeft size={16} />
                 COAL home
               </Link>
-              <Link to="/resources/coal/theory" className="learning-resources-btn secondary">
+              <Link
+                to="/resources/coal/theory"
+                className="learning-resources-btn secondary"
+              >
                 Open theory
                 <ArrowRight size={16} />
               </Link>
@@ -76,14 +93,21 @@ function CoalPracticalPage() {
         <section className="learning-resources-section">
           <div className="learning-resources-section-header">
             <h2>Planned modules</h2>
-            <p>Content will be added here as practical exercises are published.</p>
+            <p>
+              Content will be added here as practical exercises are published.
+            </p>
           </div>
 
           <div className="learning-resources-concepts-grid">
             {PLANNED_PRACTICALS.map((item) => {
               const Icon = item.icon;
               return (
-                <article key={item.title} className="learning-resources-concept-card">
+                <article
+                  key={item.key}
+                  className={`learning-resources-concept-card${
+                    item.ready ? " learning-resources-concept-card--ready" : ""
+                  }`}
+                >
                   <div
                     className="learning-resources-card-icon"
                     style={{ color: COAL_ACCENT, marginBottom: "0.65rem" }}
@@ -92,9 +116,24 @@ function CoalPracticalPage() {
                   </div>
                   <h3>{item.title}</h3>
                   <p>{item.description}</p>
-                  <span className="learning-resources-badge" style={{ marginTop: "0.75rem" }}>
-                    Coming soon
-                  </span>
+
+                  {item.ready ? (
+                    <Link
+                      to={item.path}
+                      className="learning-resources-badge learning-resources-badge--open"
+                      style={{ marginTop: "0.75rem" }}
+                    >
+                      Open
+                      <ArrowUpRight size={14} />
+                    </Link>
+                  ) : (
+                    <span
+                      className="learning-resources-badge"
+                      style={{ marginTop: "0.75rem" }}
+                    >
+                      Coming soon
+                    </span>
+                  )}
                 </article>
               );
             })}

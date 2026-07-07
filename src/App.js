@@ -13,7 +13,7 @@ import RouteSeoManager from "./components/seo/RouteSeoManager";
 import RouteNormalizer from "./components/seo/RouteNormalizer";
 import AnalyticsTracker from "./components/seo/AnalyticsTracker";
 import DlsMentorWidget from "./components/DlsMentorWidget/DlsMentorWidget";
-
+import InstructionTraceLabPage from "./pages/Coal/InstructionTraceLabPage";
 // UTILS / OTHER TOOLS:
 import ScrollToTop from "./utils/ScrollToTop";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -48,7 +48,9 @@ const RegSyncBinaryCounters = lazy(
 );
 const ProblemSolver = lazy(() => import("./pages/Book/Ch1"));
 const Ch2ProblemSolver = lazy(() => import("./pages/Book/Ch2"));
-const LearningResourcesPage = lazy(() => import("./pages/LearningResources/LearningResourcesPage"));
+const LearningResourcesPage = lazy(
+  () => import("./pages/LearningResources/LearningResourcesPage"),
+);
 const CoalHomePage = lazy(() => import("./pages/Coal/CoalHomePage"));
 const CoalTheoryPage = lazy(() => import("./pages/Coal/CoalTheoryPage"));
 const CoalPracticalPage = lazy(() => import("./pages/Coal/CoalPracticalPage"));
@@ -199,9 +201,7 @@ const AppContent = () => {
 
     scheduleTypeset();
 
-    const observer = root
-      ? new MutationObserver(scheduleTypeset)
-      : null;
+    const observer = root ? new MutationObserver(scheduleTypeset) : null;
     observer?.observe(root, {
       childList: true,
       subtree: true,
@@ -249,10 +249,16 @@ const AppContent = () => {
           <Route path="/problems" element={<ProblemsPage />} />
           <Route path="/problems/:topicSlug" element={<ProblemsPage />} />
           <Route path="/resources/coal/theory" element={<CoalTheoryPage />} />
-          <Route path="/resources/coal/practical" element={<CoalPracticalPage />} />
+          <Route
+            path="/resources/coal/practical"
+            element={<CoalPracticalPage />}
+          />
           <Route path="/resources/coal" element={<CoalHomePage />} />
           <Route path="/coal/:slug" element={<CoalTopicPage />} />
-          <Route path="/resources/:track?" element={<LearningResourcesPage />} />
+          <Route
+            path="/resources/:track?"
+            element={<LearningResourcesPage />}
+          />
           <Route path="/boolforge" element={<Boolforge />} />
 
           {/* ── Boolean Algebra (/boolean/* matches baConfig.js) ── */}
@@ -474,6 +480,12 @@ const AppContent = () => {
           {/* ── Misc ──────────────────────────────────────────── */}
           <Route path="/trainer-board" element={<DLDTrainerBoard />} />
           <Route path="*" element={<NotFoundPage />} />
+
+          {/* Coal routes */}
+          <Route
+            path="/resources/coal/practical/instruction-trace-lab"
+            element={<InstructionTraceLabPage />}
+          />
         </Routes>
       </Suspense>
     </>

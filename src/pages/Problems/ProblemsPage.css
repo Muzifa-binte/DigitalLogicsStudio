@@ -646,14 +646,16 @@
   display: flex;
   align-items: center;
   gap: 0;
+  overflow: hidden;
+  width: 100%;
 }
 
 .problems-banner-row {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(180px, 1fr));
-  gap: 4.9rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1.25rem;
   overflow-x: auto;
-  padding-bottom: 0.2rem;
+  padding: 0.5rem 0.2rem 1.2rem 0.2rem;
   /* hide scrollbar cross-browser */
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -666,17 +668,19 @@
 }
 
 .problems-banner-card {
-}
-
-.problems-banner-card {
-  min-height: 110px;
-  border-radius: 1rem;
-  padding: 0.8rem 0.9rem;
-  color: #fff;
+  flex: 0 0 320px; /* fixed width matching the screenshot */
+  min-height: 155px;
+  border-radius: 1.25rem; /* rounder corners */
+  padding: 1.5rem; /* increased spacing */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.22);
+  border: none;
+  text-align: left;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
-  width: 250px;
 }
 
 .problems-banner-card:hover,
@@ -692,25 +696,28 @@
 
 .problems-banner-card span {
   display: inline-block;
-  font-size: 0.65rem;
-  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
-  opacity: 0.9;
+  text-transform: uppercase;
+  opacity: 0.85;
+  margin-bottom: 0.4rem;
 }
 
 .problems-banner-card h2 {
-  margin: 0.5rem 0 0.4rem;
-  font-size: 1.25rem;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-size: 1.45rem; /* bold, prominent title */
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.01em;
 }
 
 .problems-banner-card p {
   margin: 0;
-  max-width: 14rem;
-  color: rgba(255, 255, 255, 0.82);
-  line-height: 1.4;
-  font-size: 0.85rem;
+  max-width: 100%;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.5;
+  font-size: 0.88rem; /* clean description text */
 }
 
 .problems-filter-chip-row {

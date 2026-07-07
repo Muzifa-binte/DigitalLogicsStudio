@@ -2151,6 +2151,215 @@ const coalTopicContent = {
       "RAID 0 offers raw speed with no backup, RAID 1 offers full mirroring backup at 50% capacity, and RAID 5 offers parity recovery across 3+ disks.",
     ],
   },
+
+  "processor-families": {
+    slug: "processor-families",
+    level: "Advanced",
+    duration: "4 days",
+    preview: {
+      summary:
+        "Contrast CISC (x86) and RISC (ARM, RISC-V, MIPS) architectures, trace the development of Intel x86 from 16-bit real mode up to modern 64-bit multi-core configurations, and understand why RISC processors dominate the embedded and mobile ecosystems.",
+      highlights: [
+        "CISC (Complex Instruction Set Computer) vs RISC design principles",
+        "Evolution of the x86 instruction set architecture family",
+        "Ecosystem and energy-efficiency advantages of ARM & RISC-V",
+      ],
+    },
+    sections: [
+      {
+        id: "cisc-risc",
+        title: "CISC vs. RISC Philosophies",
+        body: [
+          "In computer architecture, there are two primary schools of thought for designing an Instruction Set Architecture (ISA): CISC and RISC.",
+          "CISC (Complex Instruction Set Computer) focuses on hardware richness. It provides a massive set of instructions, including highly complex ones that perform multiple sub-tasks (like reading from memory, adding, and writing back) within a single instruction. This keeps assembly programs small and conserves memory, but requires complex, power-hungry decode logic in the CPU.",
+          "RISC (Reduced Instruction Set Computer) focuses on simplicity. It restricts instructions to a small number of basic, uniform-length tasks that execute in a single clock cycle. Memory access is isolated to dedicated load and store instructions (`LDR`/`STR`), and all arithmetic is performed register-to-register. This design requires more lines of assembly to do the same task but allows the CPU decoder to be simple, fast, and highly energy-efficient.",
+        ],
+        diagram: "cisc-risc-comparison",
+        realLife: {
+          title: "Real-life connection",
+          text: "Think of CISC like a Swiss Army Knife containing specialized fold-out tools (corkscrew, scissors). Think of RISC like a set of high-quality individual screwdrivers. The Swiss Army knife can do everything in one tool but is bulky and harder to use, whereas the individual screwdrivers do one thing perfectly and are faster to swap.",
+        },
+        table: {
+          caption: "CISC vs RISC Architectural Differences",
+          headers: ["Feature", "CISC (e.g., Intel x86)", "RISC (e.g., ARM, RISC-V)"],
+          rows: [
+            ["Instruction Length", "Variable (1 to 15 bytes in x86)", "Fixed (usually 4 bytes / 32 bits)"],
+            ["Memory Operations", "Any instruction can reference memory", "Only dedicated LOAD and STORE instructions"],
+            ["Registers", "Fewer general-purpose registers (8 in IA-32)", "Many general-purpose registers (typically 32)"],
+            ["Execution Time", "Variable number of clock cycles per instruction", "Single-cycle execution per instruction"],
+            ["Decoder Complexity", "High (complex hardware control unit)", "Low (simple, hardwired control logic)"],
+          ],
+        },
+      },
+      {
+        id: "x86-evolution",
+        title: "The x86 Family Lineage",
+        body: [
+          "The Intel x86 architecture is the most famous example of a CISC processor, dominating the desktop and server markets for decades. It has evolved through major generations while maintaining backwards compatibility:",
+          { type: "subheading", text: "1. 16-Bit Real Mode (8086)" },
+          "Released in 1978. It had a 20-bit address bus (could access 1 Megabyte of RAM) and used segment registers (CS, DS, SS) multiplied by 16 to offset addresses. There was no memory protection; any program could overwrite operating system RAM.",
+          { type: "subheading", text: "2. 32-Bit Protected Mode (80386 / IA-32)" },
+          "Introduced in 1985. Registers expanded to 32 bits (EAX, EBX, EIP). The address bus grew to 32 bits, allowing 4 Gigabytes of addressable memory. It introduced hardware-level memory protection (privilege rings 0-3) and segment descriptors linked to the GDT, ensuring programs couldn't corrupt each other.",
+          { type: "subheading", text: "3. 64-Bit Mode (x86-64 / AMD64)" },
+          "Designed by AMD in 2003. Registers expanded to 64 bits (RAX, RBX, RIP), and the number of general-purpose registers doubled from 8 to 16 (adding R8-R15). This enabled direct addressing of massive datasets far exceeding 4 GB.",
+        ],
+        realLife: {
+          title: "Real-life connection",
+          text: "Backwards compatibility is why your modern 64-bit Intel Core i9 processor can still run 16-bit DOS games from 1985 without emulation. The processor starts up in 16-bit Real Mode when powered on, and the operating system must explicitly switch it into Protected and then Long Mode.",
+        },
+      },
+      {
+        id: "mobile-ecosystems",
+        title: "Why RISC Rules Mobile and Embedded Systems",
+        body: [
+          "If x86 is so powerful, why doesn't your smartphone run on Intel? The answer is power consumption.",
+          "Because RISC architectures like ARM have simple control units with minimal transistors, they consume a fraction of the electricity of x86 chips. Less power consumption means longer battery life and less heat dissipation, eliminating the need for cooling fans. This makes RISC the ideal choice for smartphones, tablets, IoT microcontrollers, and now even modern thin-and-light laptops (like Apple Silicon M-series).",
+        ],
+        table: {
+          caption: "Processor Family Snapshots",
+          headers: ["Architecture", "ISA Type", "Primary Domain", "Business Model"],
+          rows: [
+            ["Intel/AMD x86", "CISC", "Desktops, Laptops, High-Performance Servers", "Proprietary (Intel/AMD manufacture directly)"],
+            ["ARM", "RISC", "Smartphones, Embedded devices, Single-board PCs", "IP Licensing (ARM designs the core; Apple/Samsung license it)"],
+            ["RISC-V", "RISC", "IoT, Academic research, Custom accelerators", "Open-Source (Free royalty-free specification)"],
+          ],
+        },
+      },
+    ],
+    keyTakeaways: [
+      "CISC features complex, variable-length instructions decoded by hardware. RISC uses simple, fixed-length instructions, shifting complexity to the compiler.",
+      "The x86 architecture evolved from 16-bit Real Mode (1 MB RAM, no protection) to 32-bit Protected Mode (4 GB RAM, rings) and 64-bit Long Mode.",
+      "RISC processors (ARM, RISC-V) dominate mobile and embedded devices because their simpler logic uses much less power.",
+    ],
+  },
+  "pipelining": {
+    slug: "pipelining",
+    level: "Advanced",
+    duration: "5 days",
+    preview: {
+      summary:
+        "Discover how pipelining lets a CPU overlap instruction execution stages to boost throughput. Study the classic 5-stage CPU pipeline (IF, ID, EX, MEM, WB) and analyze the architectural hazards (structural, data, control) that can stall execution.",
+      highlights: [
+        "The classic five-stage instruction execution pipeline stages",
+        "Structural, Data, and Control hazards and their impacts",
+        "Hazard mitigations: Stalling (bubbles), Forwarding, and Branch Prediction",
+      ],
+    },
+    sections: [
+      {
+        id: "pipelining-basics",
+        title: "Pipelining and Throughput",
+        body: [
+          "Without pipelining, a CPU executes instructions sequentially: it fetches an instruction, decodes it, executes it, accesses memory, and writes the result back before starting the next instruction. This means parts of the CPU sit idle during execution.",
+          "Pipelining changes this by executing instructions like an assembly line. While Instruction 1 is being executed in the ALU, Instruction 2 is being decoded, and Instruction 3 is being fetched from memory. Although a single instruction still takes the same amount of time to complete (latency), the processor can complete one instruction every clock cycle (throughput).",
+        ],
+        diagram: "five-stage-pipeline",
+        realLife: {
+          title: "Real-life connection",
+          text: "Think of doing laundry. If you wash, dry, fold, and put away one load of clothes before starting the next, your dryer sits empty while washing. In a pipelined laundry, as soon as the first load goes into the dryer, you put the second load in the washer, and the third load on the folding table.",
+        },
+      },
+      {
+        id: "pipeline-stages",
+        title: "The Classic 5-Stage Pipeline",
+        body: [
+          "Most standard RISC processors divide the instruction lifecycle into five distinct stages, each controlled by separate hardware circuits:",
+          { type: "subheading", text: "1. Instruction Fetch (IF)" },
+          "The CPU reads the next instruction bytes from memory addresses indicated by the Program Counter (PC) and loads them into the Instruction Register.",
+          { type: "subheading", text: "2. Instruction Decode (ID)" },
+          "The control unit decodes the instruction opcode to see what operation to perform. It also reads operand values from the Register File.",
+          { type: "subheading", text: "3. Execute (EX)" },
+          "The Arithmetic Logic Unit (ALU) performs the actual calculation (e.g., adding two register values or calculating an effective memory address).",
+          { type: "subheading", text: "4. Memory Access (MEM)" },
+          "If the instruction is a load or store (like `LDR` or `STR`), the CPU reads from or writes to the cache/RAM address computed in the EX stage. Non-memory instructions skip this step.",
+          { type: "subheading", text: "5. Write Back (WB)" },
+          "The final calculated result or loaded memory value is written back into the target register inside the register file.",
+        ],
+        table: {
+          caption: "5-Stage CPU Pipeline Stages Summary",
+          headers: ["Stage", "Abbreviation", "Hardware Active", "Action"],
+          rows: [
+            ["Instruction Fetch", "IF", "Program Counter, Cache memory", "Read instruction from memory"],
+            ["Instruction Decode", "ID", "Control Unit, Registers", "Determine instruction type and read register operands"],
+            ["Execute", "EX", "Arithmetic Logic Unit (ALU)", "Perform operation or address calculation"],
+            ["Memory Access", "MEM", "Data RAM / L1 Cache", "Read or write data if memory instruction"],
+            ["Write Back", "WB", "Register File", "Save final result back to destination register"],
+          ],
+        },
+      },
+      {
+        id: "pipeline-hazards",
+        title: "Pipeline Hazards: What Breaks the Line?",
+        body: [
+          "Pipelining works perfectly until something disrupts the flow. These disruptions are called hazards, and they fall into three categories:",
+          { type: "subheading", text: "1. Structural Hazards" },
+          "Two instructions need the same hardware resource at the same time. For example, if a CPU has a single shared memory cache for both instructions and data, it cannot fetch a new instruction (IF) while another instruction is reading data from memory (MEM). This is solved by using separate instruction and data caches (Harvard architecture).",
+          { type: "subheading", text: "2. Data Hazards" },
+          "An instruction depends on the result of a previous instruction that is still moving through the pipeline. For example, if you write `ADD R1, R2, R3` followed by `SUB R4, R1, R5`, the subtraction needs `R1` during its Decode (ID) stage, but the addition won't write the updated `R1` until its Write-Back (WB) stage. To fix this, we can insert idle cycles (stalls or bubbles) or use forwarding (routing the ALU output directly back into the ALU input).",
+          { type: "subheading", text: "3. Control Hazards" },
+          "Caused by conditional branch instructions (like jumps). The CPU doesn't know which instruction to fetch next until the branch condition is evaluated in the EX stage. If the branch is taken, all instructions fetched in the meantime are wrong and must be discarded (flushed). Modern CPUs mitigate this using advanced branch prediction units that guess the outcome.",
+        ],
+        diagram: "pipeline-hazards",
+      },
+    ],
+    keyTakeaways: [
+      "Pipelining improves CPU instruction throughput by executing multiple instructions in parallel across different execution stages.",
+      "The classic pipeline consists of five stages: Instruction Fetch (IF), Instruction Decode (ID), Execute (EX), Memory Access (MEM), and Write Back (WB).",
+      "Hazards disrupt pipelining. Structural hazards require duplicate hardware; data hazards are resolved by stalling or forwarding; control hazards are handled via branch prediction and pipeline flushes.",
+    ],
+  },
+  "computer-organization": {
+    slug: "computer-organization",
+    level: "Advanced",
+    duration: "3 days",
+    preview: {
+      summary:
+        "Synthesize all concepts from ISA, assembly language, memory layout, I/O ports, interrupts, and pipelining. Trace the end-to-end execution of a complete program down to the physical silicon.",
+      highlights: [
+        "Tracing a program from high-level variables down to CPU registers",
+        "Coordinating memory hierarchy, caching, bus activity, and I/O devices",
+        "Preparing for academic examinations and hands-on assembly projects",
+      ],
+    },
+    sections: [
+      {
+        id: "capstone-integration",
+        title: "From Code to Silicon: End-to-End System Integration",
+        body: [
+          "In this final capstone module, we trace how all elements of computer organization interact in a single system. Let's look at the flow:",
+          "First, the programmer writes code in a high-level language like C++ or Rust. The compiler converts high-level loops and variables into assembly mnemonics, which the assembler turns into binary machine code (opcodes and operands) stored on disk as an executable.",
+          "When the program is run, the OS loader maps this executable into RAM, setting the CPU's stack pointer (`ESP`) and program counter (`EIP`).",
+          "The CPU begins the instruction cycle: fetching opcodes over the System Bus, decoding them, executing calculations in the ALU, and updating local variables inside the stack frame. If the program requests keyboard input, the CPU uses I/O instructions or awaits hardware interrupts. If multiple instructions execute simultaneously, the CPU pipeline coordinates dependencies, stalls, and forwarding paths automatically.",
+        ],
+        diagram: "computer-assembly-flow",
+        realLife: {
+          title: "Real-life connection",
+          text: "When you play a video game, write a script, or load a webpage, this entire chain of events happens billions of times per second. Every layer — from the software variables to the physical transistors — must align perfectly for the system to function.",
+        },
+      },
+      {
+        id: "final-review",
+        title: "Synthesis & Exam Review",
+        body: [
+          "To prepare for exams or practical projects, review these core design questions:",
+        ],
+        table: {
+          caption: "Core Synthesis Review Scenarios",
+          headers: ["Concept", "Key Question", "Architectural Solution"],
+          rows: [
+            ["Addressing vs Memory", "How does a CPU handle array traversal in memory?", "Using indexed and base-indexed addressing modes (`MOV EAX, [EBX + ESI*4]`) to scale offsets by element size."],
+            ["Interrupts vs Polling", "When should you use interrupts instead of polling?", "Use interrupts for asynchronous events (keyboard, mouse) to free the CPU; use polling for high-speed transfers on single-task systems."],
+            ["CISC vs RISC", "How does CPU design impact compiler difficulty?", "RISC requires compilers to schedule instructions and manage registers, while CISC compilers can call powerful multi-task instructions directly."],
+          ],
+        },
+      },
+    ],
+    keyTakeaways: [
+      "Computer Organization is the intersection of software and hardware. Program variables become CPU register values; branches become jumps.",
+      "The System Bus, CPU Registers, ALU, Memory hierarchy, and Pipelining operate together to execute instructions at scale.",
+      "Low-level programming enforces hardware awareness, making you a better engineer regardless of what language you use.",
+    ],
+  },
 };
 
 function getCoalTopicContent(slug) {

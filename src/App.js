@@ -21,6 +21,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 const Home = lazy(() => import("./pages/Home/Home"));
 const Boolforge = lazy(() => import("./pages/Boolforge"));
 const ProblemsPage = lazy(() => import("./pages/Problems/ProblemsPage"));
+const CoalProblemsPage = lazy(() => import("./pages/Problems/CoalProblemsPage"));
 const RegCounters = lazy(
   () => import("./pages/RegistersAndTransfers/RegCounters"),
 );
@@ -253,6 +254,8 @@ const AppContent = () => {
             path="/resources/coal/practical"
             element={<CoalPracticalPage />}
           />
+          <Route path="/resources/coal/problems" element={<CoalProblemsPage />} />
+          <Route path="/resources/coal/problems/:topicSlug" element={<CoalProblemsPage />} />
           <Route path="/resources/coal" element={<CoalHomePage />} />
           <Route path="/coal/:slug" element={<CoalTopicPage />} />
           <Route

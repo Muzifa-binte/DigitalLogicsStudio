@@ -6,6 +6,7 @@ import {
   BookOpen,
   Cpu,
   Wrench,
+  Trophy,
 } from "lucide-react";
 import { Navbar } from "../Home/Navbar";
 import Footer from "../Home/Footer";
@@ -75,7 +76,7 @@ function CoalHomePage() {
         <section className="learning-resources-section">
           <div className="learning-resources-section-header">
             <h2>Choose a section</h2>
-            <p>Theory covers the full course path. Practical labs will be added here.</p>
+            <p>Explore theory, attempt interactive practicals, or tackle conceptual problems.</p>
           </div>
 
           <div className="learning-resources-grid">
@@ -127,6 +128,31 @@ function CoalHomePage() {
                 </div>
                 <span className="learning-resources-card-link">
                   View <ArrowRight size={16} />
+                </span>
+              </div>
+            </Link>
+
+            <Link
+              to="/resources/coal/problems"
+              className="learning-resources-card learning-resources-glow-card"
+            >
+              <div className="learning-resources-card-top">
+                <div className="learning-resources-card-meta">
+                  <div
+                    className="learning-resources-card-icon"
+                    style={{ color: COAL_ACCENT }}
+                  >
+                    <Trophy size={24} />
+                  </div>
+                  <div className="learning-resources-card-copy">
+                    <h3>Problems Arena</h3>
+                    <p>
+                      Tackle 15 COAL conceptual and code tracing challenges to test your understanding.
+                    </p>
+                  </div>
+                </div>
+                <span className="learning-resources-card-link">
+                  Solve <ArrowRight size={16} />
                 </span>
               </div>
             </Link>

@@ -847,6 +847,288 @@ export function RaidComparisonDiagram() {
   );
 }
 
+export function CiscRiscComparisonDiagram() {
+  return (
+    <figure className="coal-diagram" aria-label="CISC vs RISC design comparison">
+      <svg viewBox="0 0 540 240" role="img" className="coal-diagram__svg">
+        {/* CISC Column */}
+        <text x="135" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "14px" }}>CISC (e.g. x86)</text>
+        
+        <rect x="25" y="45" width="220" height="42" rx="4" className="coal-diagram__box coal-diagram__box--cpu" />
+        <text x="135" y="62" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>ADD [MemA], EBX</text>
+        <text x="135" y="78" textAnchor="middle" className="coal-diagram__sublabel">Single complex instruction (variable length)</text>
+
+        {/* Micro-operations inside CISC */}
+        <rect x="25" y="105" width="60" height="35" rx="3" className="coal-diagram__box" />
+        <text x="55" y="122" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "9px" }}>1. Load MemA</text>
+
+        <rect x="105" y="105" width="60" height="35" rx="3" className="coal-diagram__box" />
+        <text x="135" y="122" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "9px" }}>2. Add EBX</text>
+
+        <rect x="185" y="105" width="60" height="35" rx="3" className="coal-diagram__box" />
+        <text x="215" y="122" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "9px" }}>3. Store MemA</text>
+
+        <path d="M 55 87 L 55 105" className="coal-diagram__arrow" markerEnd="url(#arrowhead)" />
+        <path d="M 135 87 L 135 105" className="coal-diagram__arrow" markerEnd="url(#arrowhead)" />
+        <path d="M 215 87 L 215 105" className="coal-diagram__arrow" markerEnd="url(#arrowhead)" />
+
+        <text x="135" y="170" textAnchor="middle" className="coal-diagram__sublabel">Hardware decodes into multiple micro-operations.</text>
+        <text x="135" y="185" textAnchor="middle" className="coal-diagram__sublabel">Saves memory, but CPU decoder is complex.</text>
+
+        {/* Divider */}
+        <line x1="270" y1="15" x2="270" y2="215" stroke="rgba(167, 139, 250, 0.25)" strokeWidth="1.5" strokeDasharray="4 4" />
+
+        {/* RISC Column */}
+        <text x="405" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "14px" }}>RISC (e.g. ARM, RISC-V)</text>
+
+        <rect x="295" y="45" width="220" height="110" rx="6" fill="rgba(15, 23, 42, 0.4)" stroke="rgba(167, 139, 250, 0.3)" />
+        
+        <rect x="305" y="55" width="200" height="22" rx="3" className="coal-diagram__box coal-diagram__box--mem" />
+        <text x="405" y="70" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "10px" }}>LDR R1, [MemA]   ; Load value</text>
+        
+        <rect x="305" y="85" width="200" height="22" rx="3" className="coal-diagram__box coal-diagram__box--cpu" />
+        <text x="405" y="100" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "10px" }}>ADD R1, R1, R2   ; Add registers</text>
+
+        <rect x="305" y="115" width="200" height="22" rx="3" className="coal-diagram__box coal-diagram__box--mem" />
+        <text x="405" y="130" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "10px" }}>STR R1, [MemA]   ; Store result</text>
+
+        <text x="405" y="170" textAnchor="middle" className="coal-diagram__sublabel">Simple, fixed-length (4 bytes) instructions.</text>
+        <text x="405" y="185" textAnchor="middle" className="coal-diagram__sublabel">Compiler works harder. Fast single-cycle execution.</text>
+
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" className="coal-diagram__arrowhead" />
+          </marker>
+        </defs>
+      </svg>
+      <figcaption>CISC relies on a powerful processor that decodes complex instructions into micro-ops. RISC relies on a simple processor executing uniform instructions quickly, shifting translation complexity to the compiler.</figcaption>
+    </figure>
+  );
+}
+
+export function FiveStagePipelineDiagram() {
+  const stages = ["IF", "ID", "EX", "MEM", "WB"];
+  const colors = [
+    "rgba(59, 130, 246, 0.22)", // Blue for IF
+    "rgba(139, 92, 246, 0.22)", // Purple for ID
+    "rgba(239, 68, 68, 0.22)",  // Red for EX
+    "rgba(251, 191, 36, 0.22)", // Yellow for MEM
+    "rgba(16, 185, 129, 0.22)"  // Green for WB
+  ];
+  const borderColors = [
+    "rgba(59, 130, 246, 0.6)",
+    "rgba(139, 92, 246, 0.6)",
+    "rgba(239, 68, 68, 0.6)",
+    "rgba(251, 191, 36, 0.6)",
+    "rgba(16, 185, 129, 0.6)"
+  ];
+
+  return (
+    <figure className="coal-diagram" aria-label="Classic 5-stage CPU pipeline">
+      <svg viewBox="0 0 540 220" role="img" className="coal-diagram__svg">
+        {/* Cycles headers */}
+        <text x="140" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>CC 1</text>
+        <text x="195" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>CC 2</text>
+        <text x="250" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>CC 3</text>
+        <text x="305" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>CC 4</text>
+        <text x="360" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>CC 5</text>
+        <text x="415" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>CC 6</text>
+        <text x="470" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>CC 7</text>
+
+        {/* Instruction 1 */}
+        <text x="20" y="60" className="coal-diagram__label" style={{ fontSize: "11px" }}>Instr 1</text>
+        {stages.map((stage, i) => (
+          <g key={`i1-${stage}`}>
+            <rect x={115 + i * 55} y="45" width="50" height="24" rx="3" fill={colors[i]} stroke={borderColors[i]} strokeWidth="1.5" />
+            <text x={140 + i * 55} y="61" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "10px" }}>{stage}</text>
+          </g>
+        ))}
+
+        {/* Instruction 2 */}
+        <text x="20" y="95" className="coal-diagram__label" style={{ fontSize: "11px" }}>Instr 2</text>
+        {stages.map((stage, i) => (
+          <g key={`i2-${stage}`}>
+            <rect x={170 + i * 55} y="80" width="50" height="24" rx="3" fill={colors[i]} stroke={borderColors[i]} strokeWidth="1.5" />
+            <text x={195 + i * 55} y="96" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "10px" }}>{stage}</text>
+          </g>
+        ))}
+
+        {/* Instruction 3 */}
+        <text x="20" y="130" className="coal-diagram__label" style={{ fontSize: "11px" }}>Instr 3</text>
+        {stages.map((stage, i) => (
+          <g key={`i3-${stage}`}>
+            <rect x={225 + i * 55} y="115" width="50" height="24" rx="3" fill={colors[i]} stroke={borderColors[i]} strokeWidth="1.5" />
+            <text x={250 + i * 55} y="131" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "10px" }}>{stage}</text>
+          </g>
+        ))}
+
+        {/* Instruction 4 */}
+        <text x="20" y="165" className="coal-diagram__label" style={{ fontSize: "11px" }}>Instr 4</text>
+        {stages.map((stage, i) => (
+          <g key={`i4-${stage}`}>
+            <rect x={280 + i * 55} y="150" width="50" height="24" rx="3" fill={colors[i]} stroke={borderColors[i]} strokeWidth="1.5" />
+            <text x={305 + i * 55} y="166" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "10px" }}>{stage}</text>
+          </g>
+        ))}
+
+        {/* Legend */}
+        <text x="20" y="200" className="coal-diagram__sublabel" style={{ fontSize: "9px" }}>IF: Fetch | ID: Decode | EX: Execute | MEM: Memory | WB: Write Back</text>
+      </svg>
+      <figcaption>Instruction pipelining increases CPU instruction throughput by overlapping different stages of execution. On Clock Cycle 5, all 5 stages of the CPU are working on 5 different instructions simultaneously.</figcaption>
+    </figure>
+  );
+}
+
+export function PipelineHazardsDiagram() {
+  return (
+    <figure className="coal-diagram" aria-label="Pipeline data hazard and mitigation">
+      <svg viewBox="0 0 540 240" role="img" className="coal-diagram__svg">
+        {/* Left Side: Stall (Bubble) */}
+        <text x="135" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "13px" }}>Data Hazard with Stalling</text>
+
+        <text x="20" y="55" className="coal-diagram__sublabel" style={{ fontSize: "9px" }}>ADD R1, R2, R3 (Writes in WB)</text>
+        <rect x="25" y="65" width="30" height="18" rx="2" fill="rgba(59, 130, 246, 0.2)" stroke="rgba(59, 130, 246, 0.5)" />
+        <text x="40" y="77" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>IF</text>
+        <rect x="60" y="65" width="30" height="18" rx="2" fill="rgba(139, 92, 246, 0.2)" stroke="rgba(139, 92, 246, 0.5)" />
+        <text x="75" y="77" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>ID</text>
+        <rect x="95" y="65" width="30" height="18" rx="2" fill="rgba(239, 68, 68, 0.2)" stroke="rgba(239, 68, 68, 0.5)" />
+        <text x="110" y="77" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>EX</text>
+        <rect x="130" y="65" width="30" height="18" rx="2" fill="rgba(251, 191, 36, 0.2)" stroke="rgba(251, 191, 36, 0.5)" />
+        <text x="145" y="77" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>MEM</text>
+        <rect x="165" y="65" width="30" height="18" rx="2" fill="rgba(16, 185, 129, 0.4)" stroke="rgba(16, 185, 129, 0.7)" />
+        <text x="180" y="77" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px", fontWeight: "bold" }}>WB</text>
+
+        <text x="20" y="105" className="coal-diagram__sublabel" style={{ fontSize: "9px" }}>SUB R4, R1, R5 (Reads R1 in ID)</text>
+        <rect x="60" y="115" width="30" height="18" rx="2" fill="rgba(59, 130, 246, 0.2)" stroke="rgba(59, 130, 246, 0.5)" />
+        <text x="75" y="127" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>IF</text>
+        
+        {/* Stall bubbles */}
+        <rect x="95" y="115" width="30" height="18" rx="2" fill="rgba(239, 68, 68, 0.1)" stroke="rgba(239, 68, 68, 0.4)" strokeDasharray="2 2" />
+        <text x="110" y="127" textAnchor="middle" className="coal-diagram__sublabel" style={{ fill: "#f87171", fontSize: "7px" }}>STALL</text>
+        <rect x="130" y="115" width="30" height="18" rx="2" fill="rgba(239, 68, 68, 0.1)" stroke="rgba(239, 68, 68, 0.4)" strokeDasharray="2 2" />
+        <text x="145" y="127" textAnchor="middle" className="coal-diagram__sublabel" style={{ fill: "#f87171", fontSize: "7px" }}>STALL</text>
+
+        <rect x="165" y="115" width="30" height="18" rx="2" fill="rgba(139, 92, 246, 0.4)" stroke="rgba(139, 92, 246, 0.7)" />
+        <text x="180" y="127" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px", fontWeight: "bold" }}>ID</text>
+        <rect x="200" y="115" width="30" height="18" rx="2" fill="rgba(239, 68, 68, 0.2)" stroke="rgba(239, 68, 68, 0.5)" />
+        <text x="215" y="127" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>EX</text>
+
+        <text x="135" y="175" textAnchor="middle" className="coal-diagram__sublabel">Bubble inserts wait states. Delays execution.</text>
+
+        {/* Divider */}
+        <line x1="270" y1="15" x2="270" y2="215" stroke="rgba(167, 139, 250, 0.25)" strokeWidth="1.5" strokeDasharray="4 4" />
+
+        {/* Right Side: Forwarding */}
+        <text x="405" y="25" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "13px" }}>Forwarding (Bypassing)</text>
+
+        <text x="290" y="55" className="coal-diagram__sublabel" style={{ fontSize: "9px" }}>ADD R1, R2, R3</text>
+        <rect x="295" y="65" width="30" height="18" rx="2" fill="rgba(59, 130, 246, 0.2)" stroke="rgba(59, 130, 246, 0.5)" />
+        <text x="310" y="77" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>IF</text>
+        <rect x="330" y="65" width="30" height="18" rx="2" fill="rgba(139, 92, 246, 0.2)" stroke="rgba(139, 92, 246, 0.5)" />
+        <text x="345" y="77" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>ID</text>
+        
+        {/* EX stage */}
+        <rect x="365" y="65" width="30" height="18" rx="2" fill="rgba(239, 68, 68, 0.4)" stroke="rgba(239, 68, 68, 0.7)" id="ex-stage-i1" />
+        <text x="380" y="77" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px", fontWeight: "bold" }}>EX</text>
+        
+        <rect x="400" y="65" width="30" height="18" rx="2" fill="rgba(251, 191, 36, 0.2)" stroke="rgba(251, 191, 36, 0.5)" />
+        <text x="415" y="77" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>MEM</text>
+        <rect x="435" y="65" width="30" height="18" rx="2" fill="rgba(16, 185, 129, 0.2)" stroke="rgba(16, 185, 129, 0.5)" />
+        <text x="450" y="77" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>WB</text>
+
+        <text x="290" y="105" className="coal-diagram__sublabel" style={{ fontSize: "9px" }}>SUB R4, R1, R5</text>
+        <rect x="330" y="115" width="30" height="18" rx="2" fill="rgba(59, 130, 246, 0.2)" stroke="rgba(59, 130, 246, 0.5)" />
+        <text x="345" y="127" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>IF</text>
+        <rect x="365" y="115" width="30" height="18" rx="2" fill="rgba(139, 92, 246, 0.2)" stroke="rgba(139, 92, 246, 0.5)" />
+        <text x="380" y="127" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>ID</text>
+        
+        {/* EX stage for instruction 2 */}
+        <rect x="400" y="115" width="30" height="18" rx="2" fill="rgba(239, 68, 68, 0.4)" stroke="rgba(239, 68, 68, 0.7)" />
+        <text x="415" y="127" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px", fontWeight: "bold" }}>EX</text>
+        
+        <rect x="435" y="115" width="30" height="18" rx="2" fill="rgba(251, 191, 36, 0.2)" stroke="rgba(251, 191, 36, 0.5)" />
+        <text x="450" y="127" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>MEM</text>
+
+        {/* Forwarding wire arrow */}
+        <path d="M 380 83 C 380 98, 415 98, 415 113" fill="none" stroke="#10b981" strokeWidth="1.5" markerEnd="url(#arrowhead-green)" />
+        <text x="402" y="98" textAnchor="middle" className="coal-diagram__sublabel" style={{ fill: "#34d399", fontSize: "8px", fontWeight: "bold" }}>Forward</text>
+
+        <text x="405" y="175" textAnchor="middle" className="coal-diagram__sublabel">Data passed immediately. Stalls are avoided!</text>
+
+        <defs>
+          <marker id="arrowhead-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#10b981" />
+          </marker>
+        </defs>
+      </svg>
+      <figcaption>When an instruction depends on a previous instruction's result, a Data Hazard occurs. A stall (bubble) halts the pipeline for 2 clock cycles. Forwarding pathways bypass this by routing arithmetic output directly back into the ALU.</figcaption>
+    </figure>
+  );
+}
+
+export function ComputerAssemblyFlowDiagram() {
+  return (
+    <figure className="coal-diagram" aria-label="From source code to hardware execution">
+      <svg viewBox="0 0 540 240" role="img" className="coal-diagram__svg">
+        {/* Source level */}
+        <rect x="20" y="30" width="100" height="35" rx="4" className="coal-diagram__box coal-diagram__box--mem" />
+        <text x="70" y="52" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>High-Level Code</text>
+        <text x="70" y="80" textAnchor="middle" className="coal-diagram__sublabel">a = b + c;</text>
+
+        {/* Arrow 1 */}
+        <line x1="120" y1="47" x2="160" y2="47" className="coal-diagram__arrow" markerEnd="url(#arrowhead)" />
+        <text x="140" y="40" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>Compiler</text>
+
+        {/* Assembly level */}
+        <rect x="160" y="30" width="105" height="55" rx="4" className="coal-diagram__box coal-diagram__box--cpu" />
+        <text x="212" y="50" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>Assembly (COAL)</text>
+        <text x="212" y="68" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px", fontFamily: "monospace" }}>MOV EAX, [b]</text>
+        <text x="212" y="78" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px", fontFamily: "monospace" }}>ADD EAX, [c]</text>
+
+        {/* Arrow 2 */}
+        <line x1="265" y1="47" x2="305" y2="47" className="coal-diagram__arrow" markerEnd="url(#arrowhead)" />
+        <text x="285" y="40" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>Assembler</text>
+
+        {/* Machine code level */}
+        <rect x="305" y="30" width="100" height="55" rx="4" className="coal-diagram__box coal-diagram__box--io" />
+        <text x="355" y="50" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>Machine Code</text>
+        <text x="355" y="68" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px", fontFamily: "monospace" }}>8B 05 04 30 40</text>
+        <text x="355" y="78" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px", fontFamily: "monospace" }}>03 05 08 30 40</text>
+
+        {/* Arrow 3 */}
+        <line x1="405" y1="47" x2="435" y2="47" className="coal-diagram__arrow" markerEnd="url(#arrowhead)" />
+        <text x="420" y="40" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px" }}>Loader</text>
+
+        {/* CPU hardware execution */}
+        <rect x="435" y="30" width="85" height="150" rx="4" fill="rgba(139, 92, 246, 0.15)" stroke="rgba(167, 139, 250, 0.55)" strokeWidth="1.5" />
+        <text x="477" y="50" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "10px" }}>CPU Datapath</text>
+        
+        <rect x="445" y="65" width="65" height="20" rx="2" className="coal-diagram__box coal-diagram__box--cpu" />
+        <text x="477" y="78" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "8px", fontWeight: "bold" }}>EAX Register</text>
+
+        <rect x="445" y="95" width="65" height="30" rx="2" className="coal-diagram__box" style={{ fill: "rgba(239, 68, 68, 0.12)", stroke: "rgba(239, 68, 68, 0.45)" }} />
+        <text x="477" y="113" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "9px" }}>ALU (ADD)</text>
+
+        {/* RAM block at bottom */}
+        <rect x="160" y="130" width="245" height="50" rx="4" className="coal-diagram__box coal-diagram__box--mem" />
+        <text x="282" y="150" textAnchor="middle" className="coal-diagram__label" style={{ fontSize: "11px" }}>RAM Address Space</text>
+        <text x="282" y="168" textAnchor="middle" className="coal-diagram__sublabel" style={{ fontSize: "9px" }}>Address 0x403004 [b] | Address 0x403008 [c]</text>
+
+        {/* Flow arrows linking CPU and RAM */}
+        <path d="M 282 130 C 282 105, 440 105, 440 80" fill="none" stroke="rgba(167, 139, 250, 0.4)" strokeWidth="1.5" strokeDasharray="3 3" />
+        <path d="M 445 110 L 405 140" className="coal-diagram__arrow" markerEnd="url(#arrowhead)" />
+        
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" className="coal-diagram__arrowhead" />
+          </marker>
+        </defs>
+      </svg>
+      <figcaption>High-level variables are compiled into assembly instruction offsets, assembled into binary opcodes (machine code) stored in RAM, and fetched by the CPU to load values into registers and process them through the ALU.</figcaption>
+    </figure>
+  );
+}
+
 
 const DIAGRAM_MAP = {
   "von-neumann": VonNeumannDiagram,
@@ -872,6 +1154,10 @@ const DIAGRAM_MAP = {
   "interrupt-lifecycle": InterruptLifecycleDiagram,
   "system-bus-split": SystemBusSplitDiagram,
   "raid-comparison": RaidComparisonDiagram,
+  "cisc-risc-comparison": CiscRiscComparisonDiagram,
+  "five-stage-pipeline": FiveStagePipelineDiagram,
+  "pipeline-hazards": PipelineHazardsDiagram,
+  "computer-assembly-flow": ComputerAssemblyFlowDiagram,
 };
 
 export function CoalDiagram({ type }) {
@@ -879,4 +1165,5 @@ export function CoalDiagram({ type }) {
   if (!Component) return null;
   return <Component />;
 }
+
 

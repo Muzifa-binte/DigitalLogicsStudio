@@ -18,33 +18,43 @@ import {
   Grid,
   Binary,
   Layers,
-  Tv,
   Activity,
-  Coins,
-  Calculator,
   Info,
   Menu,
   X,
+  FileQuestion,
+  Award
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
 import { Navbar } from "../Home/Navbar";
 import useLearningProgress from "../../hooks/useLearningProgress";
-import coreTopics from "../../data/coreTopics";
+import { coalCourseParts } from "../../data/coalCourseOutline";
 import problemsCatalog, {
   problemBannerCards,
   problemDifficultyOptions,
   problemFilterGroups,
   problemSortOptions,
   problemStatusOptions,
-} from "./problemCatalog";
-import ProblemModal from "./ProblemModal";
-import "./ProblemsPage.css";
-import {
-  trackPracticeEngagement,
-  trackTopicEngagement,
-} from "../../utils/analytics";
+} from "./coalProblemsCatalog";
+import CoalProblemModal from "./CoalProblemModal";
+import "./CoalProblemsPage.css";
+import { trackPracticeEngagement } from "../../utils/analytics";
 
+// Generate COAL topic list for useLearningProgress hook
+const coalTopicsList = coalCourseParts.flatMap((part) =>
+  part.modules.map((mod) => ({
+    id: mod.id,
+    title: mod.title,
+    links: mod.lessons.map((lesson, idx) => ({ id: `${mod.slug}-${idx}` })),
+  }))
+);
+
+const coalTopicLookup = Object.fromEntries(
+  coalTopicsList.map((topic) => [topic.id, topic])
+);
+
+// Sidebar sections for COAL
 const leftNavSections = [
   {
     title: "Practice Arenas",
@@ -53,178 +63,42 @@ const leftNavSections = [
         label: "Problems Library",
         icon: LibraryBig,
         panel: {
-          description: "All digital logic problems — combinational, sequential, arithmetic and more.",
+          description: "All COAL problems — signed numbers, instruction tracing, cache operations and more.",
           links: [
-            { label: "All Problems", action: "navigate", value: "/problems" },
-            { label: "Easy problems", action: "filter", value: "Easy" },
-            { label: "Medium problems", action: "filter", value: "Medium" },
-            { label: "Hard problems", action: "filter", value: "Hard" },
-            { label: "Combinational", action: "topic", value: "Combinational Circuits" },
-            { label: "Sequential", action: "topic", value: "Sequential Circuits" },
+            { label: "All Problems", action: "navigate", value: "/resources/coal/problems" },
+            { label: "Easy challenges", action: "filter", value: "Easy" },
+            { label: "Medium challenges", action: "filter", value: "Medium" },
+            { label: "Hard challenges", action: "filter", value: "Hard" },
+            { label: "Assembly Code", action: "topic", value: "Assembly Programming" },
+            { label: "Cache & Memory", action: "topic", value: "Cache & Memory" },
           ],
         },
       },
       {
-        label: "K-Map Arena",
-        icon: Layers,
-        topicSlug: "k-map",
-        badge: "Core",
+        label: "Assembly Lab",
+        icon: Cpu,
+        topicSlug: "assembly",
+        badge: "Interactive",
         panel: {
-          description: "Karnaugh map simplification — SOP, POS, don't-cares, 2 to 4 variables.",
+          description: "Step-by-step assembly instruction execution and register visualization.",
           links: [
-            { label: "K-Map Problems", action: "navigate", value: "/problems/k-map" },
-            { label: "K-Map Simplifier Tool", action: "navigate", value: "/kmapgenerator" },
-            { label: "Minterms Tutorial", action: "navigate", value: "/boolean/minterms" },
-            { label: "Maxterms Tutorial", action: "navigate", value: "/boolean/maxterms" },
-            { label: "Boolean Laws", action: "navigate", value: "/boolean/laws" },
-          ],
-        },
-      },
-      {
-        label: "Sequential Arena",
-        icon: Sparkles,
-        topicSlug: "sequential-circuits",
-        panel: {
-          description: "Latches, flip-flops, state diagrams and sequential circuit design.",
-          links: [
-            { label: "Sequential Problems", action: "navigate", value: "/problems/sequential-circuits" },
-            { label: "Latches", action: "navigate", value: "/sequential/latches" },
-            { label: "Flip-Flops", action: "navigate", value: "/sequential/flip-flops" },
-            { label: "State Diagrams", action: "navigate", value: "/sequential/state-diagram" },
-            { label: "Timing Diagrams", action: "navigate", value: "/timing-diagrams" },
-          ],
-        },
-      },
-      {
-        label: "Number Arena",
-        icon: Binary,
-        topicSlug: "number-systems",
-        panel: {
-          description: "Binary, hex, BCD, 2's complement, signed arithmetic and base conversions.",
-          links: [
-            { label: "Number Problems", action: "navigate", value: "/problems/number-systems" },
-            { label: "Base Converter", action: "navigate", value: "/number-systems/number-conversion" },
-            { label: "Binary Visualizer", action: "navigate", value: "/number-systems/binary-representation" },
-            { label: "BCD Notation", action: "navigate", value: "/number-systems/bcd-notation" },
-            { label: "2's Complement", action: "navigate", value: "/arithmetic/complements" },
+            { label: "Trace Simulator", action: "navigate", value: "/resources/coal/practical/instruction-trace-lab" },
+            { label: "Assembly Syntax", action: "navigate", value: "/coal/coal-syntax" },
+            { label: "Stack & Procedures", action: "navigate", value: "/coal/procedures-stack" },
           ],
         },
       },
     ],
   },
   {
-    title: "Interactive Labs",
+    title: "COAL Syllabus Parts",
     items: [
-      { label: "Circuit Forge", icon: Cpu, path: "/boolforge" },
-      { label: "K-Map Studio", icon: Grid, path: "/kmapgenerator" },
-      {
-        label: "DLD Trainer Board",
-        icon: Tv,
-        path: "/trainer-board",
-        badge: "Live",
-      },
-      { label: "Timing Diagrams", icon: Activity, path: "/timing-diagrams" },
-    ],
-  },
-  {
-    title: "Design Utilities",
-    items: [
-      { label: "Circuit Cost Calc", icon: Coins, path: "/circuit-cost" },
-      {
-        label: "Parity Calculator",
-        icon: Calculator,
-        path: "/paritybitcalculator",
-      },
-      {
-        label: "Universal Gates Lab",
-        icon: FolderHeart,
-        path: "/universal-gates",
-      },
-      { label: "Standard Forms", icon: GraduationCap, path: "/standard-forms" },
-    ],
-  },
-  {
-    title: "Arithmetic Circuits",
-    items: [
-      {
-        label: "Adders & Subtractors",
-        icon: Cpu,
-        path: "/arithmetic/binary-add-subtractor",
-      },
-      {
-        label: "Binary Multipliers",
-        icon: Cpu,
-        path: "/arithmetic/binary-multipliers",
-      },
-      {
-        label: "Magnitude Comparators",
-        icon: Cpu,
-        path: "/arithmetic/magnitude-comparator",
-      },
-      {
-        label: "Signed Numbers",
-        icon: Binary,
-        path: "/arithmetic/signed-unsigned",
-      },
-    ],
-  },
-  {
-    title: "Combinational Logic",
-    items: [
-      { label: "Encoder Studio", icon: Layers, path: "/encoder" },
-      { label: "Decoder Studio", icon: Layers, path: "/decoder" },
-      { label: "Multiplexers (MUX)", icon: Grid, path: "/mux" },
-      { label: "Demultiplexers (DEMUX)", icon: Grid, path: "/demux" },
-    ],
-  },
-  {
-    title: "Sequential & Storage",
-    items: [
-      {
-        label: "Latches & Flip-Flops",
-        icon: Sparkles,
-        path: "/sequential/flip-flops",
-      },
-      {
-        label: "Registers & Loading",
-        icon: Layers,
-        path: "/registers/shift-registers",
-      },
-      {
-        label: "Ripple Counters",
-        icon: Binary,
-        path: "/registers/ripple-counters",
-      },
-      { label: "State Analysis", icon: Compass, path: "/sequential/analysis" },
-    ],
-  },
-  {
-    title: "Memory Systems",
-    items: [
-      { label: "Memory Basics", icon: BookOpen, path: "/memory/basics" },
-      {
-        label: "Programmable PLA",
-        icon: Cpu,
-        path: "/memory/programmable-logic-array",
-      },
-      {
-        label: "Random Access Memory",
-        icon: Lock,
-        path: "/memory/random-access-memory",
-      },
-    ],
-  },
-  {
-    title: "Learning & Reference",
-    items: [
-      { label: "Chapter Solvers", icon: BookOpen, path: "/book" },
-      { label: "Logic Gate Guide", icon: Info, path: "/gates" },
-      {
-        label: "Boolean Identities",
-        icon: GraduationCap,
-        path: "/boolean/identities",
-      },
-      { label: "Boolean Laws", icon: BookOpen, path: "/boolean/laws" },
+      { label: "Part 1: Foundations", icon: Info, actionGroup: "Foundations" },
+      { label: "Part 2: Number Systems", icon: Binary, actionGroup: "Number Systems" },
+      { label: "Part 3: ISA & Registers", icon: Award, actionGroup: "ISA & Registers" },
+      { label: "Part 4: Assembly Coding", icon: Cpu, actionGroup: "Assembly Programming" },
+      { label: "Part 5: Cache & Memory", icon: Grid, actionGroup: "Cache & Memory" },
+      { label: "Part 6: I/O & Interrupts", icon: Activity, actionGroup: "I/O & Interrupts" },
     ],
   },
 ];
@@ -236,75 +110,6 @@ const difficultyTone = {
 };
 
 const weekdayLabels = ["S", "M", "T", "W", "T", "F", "S"];
-
-const topicLookup = Object.fromEntries(
-  coreTopics.map((topic) => [topic.id, topic]),
-);
-
-const problemTopicLandingMap = {
-  "boolean-algebra": {
-    group: "Boolean Algebra",
-    title: "Boolean Algebra Problems",
-    description:
-      "Practice identities, laws, consensus, SOP, POS, minterms, and maxterms with exam-oriented Boolean algebra questions.",
-    links: [
-      { to: "/boolean/overview", label: "Boolean algebra tutorial" },
-      { to: "/boolean/minterms-maxterms", label: "Minterms and maxterms" },
-      { to: "/standard-forms", label: "SOP and POS guide" },
-    ],
-  },
-  "k-map": {
-    group: "K-Map",
-    title: "K-Map Problems",
-    description:
-      "Train on Karnaugh map grouping, SOP/POS simplification, don't-care conditions, and expression minimization with guided K-map practice.",
-    links: [
-      { to: "/kmapgenerator", label: "K-Map simplifier tool" },
-      { to: "/boolean/minterms", label: "Minterms tutorial" },
-      { to: "/boolean/maxterms", label: "Maxterms tutorial" },
-      { to: "/boolean/laws", label: "Boolean laws reference" },
-    ],
-  },
-  "number-systems": {
-    group: "Number Systems",
-    title: "Number System Problems",
-    description:
-      "Practice number conversion, 2's complement, signed representation, BCD, hexadecimal, and binary arithmetic across common base systems.",
-    links: [
-      { to: "/number-systems/calculator", label: "Number system calculator" },
-      { to: "/number-systems/number-conversion", label: "Base conversion tutorial" },
-      { to: "/arithmetic/complements", label: "2's complement guide" },
-      { to: "/number-systems/bcd-notation", label: "BCD notation" },
-    ],
-  },
-  "sequential-circuits": {
-    group: "Sequential Circuits",
-    title: "Sequential Circuit Problems",
-    description:
-      "Revise latches, flip-flops, state tables, SR/D/JK/T behavior, and sequence design with focused sequential-circuit practice.",
-    links: [
-      { to: "/sequential/intro", label: "Sequential circuits introduction" },
-      { to: "/sequential/latches", label: "Latches tutorial" },
-      { to: "/sequential/flip-flops", label: "Flip-flops tutorial" },
-      { to: "/sequential/state-diagram", label: "State diagrams and tables" },
-      { to: "/timing-diagrams", label: "Timing diagrams" },
-    ],
-  },
-  "flip-flops": {
-    group: "Sequential Circuits",
-    title: "Flip-Flop Problems",
-    description:
-      "Review SR, JK, D, and T flip-flop truth tables, excitation behavior, and exam-style practice questions.",
-    links: [
-      { to: "/sequential/flip-flops", label: "Flip-flops tutorial" },
-      { to: "/sequential/flip-flop-types", label: "Flip-flop types" },
-      {
-        to: "/problems/sequential-circuits",
-        label: "Sequential circuit problems",
-      },
-    ],
-  },
-};
 
 const monthLabel = (date) =>
   new Intl.DateTimeFormat("en-US", {
@@ -421,7 +226,7 @@ function CalendarWidget({ month, setMonth, monthMatrix }) {
   );
 }
 
-function SelectedProblemCard({ problem, status, onAttempt, onToggleSolved }) {
+function SelectedProblemCard({ problem, status, onSolveClick }) {
   if (!problem) {
     return null;
   }
@@ -430,7 +235,7 @@ function SelectedProblemCard({ problem, status, onAttempt, onToggleSolved }) {
     <section className="problems-widget selected-problem-widget">
       <div className="problems-widget-head">
         <div>
-          <span className="problems-widget-label">Selected Problem</span>
+          <span className="problems-widget-label">Selected Challenge</span>
           <h3>{problem.title}</h3>
         </div>
         <span
@@ -459,25 +264,18 @@ function SelectedProblemCard({ problem, status, onAttempt, onToggleSolved }) {
       ) : null}
 
       <div className="selected-problem-actions">
-        <button type="button" onClick={() => onAttempt(problem)}>
-          Record attempt
-        </button>
         <button
           type="button"
-          className={status?.status === "solved" ? "is-solved" : ""}
-          onClick={() => onToggleSolved(problem, status?.status !== "solved")}
+          onClick={() => onSolveClick(problem)}
+          style={{ width: "100%", justifyContent: "center" }}
         >
-          {status?.status === "solved" ? "Mark unsolved" : "Mark solved"}
+          Solve Problem →
         </button>
-        <Link to="/boolforge" className="selected-problem-link">
-          Open Circuit Forge
-        </Link>
       </div>
     </section>
   );
 }
 
-/* ── Static always-open section for non-arena sidebar groups ── */
 function SidebarAccordion({ section, activeItemLabel, onItemClick }) {
   return (
     <div className="sidebar-nav-section">
@@ -512,13 +310,12 @@ function SidebarAccordion({ section, activeItemLabel, onItemClick }) {
   );
 }
 
-export default function ProblemsPage() {
+export default function CoalProblemsPage() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
   const { topicSlug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { theme, toggle: toggleTheme } = useTheme();
-  const topicLanding = topicSlug ? problemTopicLandingMap[topicSlug] : null;
 
   const bannerRef = React.useRef(null);
   const tweenRef = React.useRef(null);
@@ -527,22 +324,22 @@ export default function ProblemsPage() {
   const retryCountRef = React.useRef(0);
 
   const getActiveItem = () => {
-    if (topicSlug === "k-map") return "K-Map Arena";
-    if (topicSlug === "sequential-circuits") return "Sequential Arena";
-    if (topicSlug === "number-systems") return "Number Arena";
-    if (!topicSlug) return "Problems Library";
-    return "";
+    if (topicSlug === "assembly") return "Assembly Lab";
+    return "Problems Library";
   };
   const activeItemLabel = getActiveItem();
 
   const handleSidebarClick = (item) => {
-    setIsMobileSidebarOpen(false); // Close sidebar on mobile drawer click
+    setIsMobileSidebarOpen(false);
     if (item.path) {
       navigate(item.path);
     } else if (item.topicSlug) {
-      navigate(`/problems/${item.topicSlug}`);
+      navigate(`/resources/coal/problems/${item.topicSlug}`);
+    } else if (item.actionGroup) {
+      setActiveGroup(item.actionGroup);
+      setTopicFilter(item.actionGroup);
     } else {
-      navigate("/problems");
+      navigate("/resources/coal/problems");
       setActiveGroup("All Topics");
       setTopicFilter("All Topics");
     }
@@ -633,27 +430,23 @@ export default function ProblemsPage() {
     if (resumeTimeoutRef.current) {
       clearTimeout(resumeTimeoutRef.current);
     }
-    // Resume immediately on mouse leave
     const el = bannerRef.current;
     if (!el) return;
     const maxScroll = el.scrollWidth - el.clientWidth;
     if (maxScroll <= 0) return;
 
-    // Check direction based on previous destination
     const isGoingToZero =
       tweenRef.current && tweenRef.current.vars.scrollLeft === 0;
     startAutoscroll(!isGoingToZero);
   };
 
-  const [activeGroup, setActiveGroup] = React.useState(
-    topicLanding?.group || "All Topics",
-  );
+  const [activeGroup, setActiveGroup] = React.useState("All Topics");
   const [searchTerm, setSearchTerm] = React.useState("");
   const [difficulty, setDifficulty] = React.useState(
     problemDifficultyOptions[0],
   );
   const [topicFilter, setTopicFilter] = React.useState(
-    topicLanding?.group || problemFilterGroups[0],
+    problemFilterGroups[0],
   );
   const [statusFilter, setStatusFilter] = React.useState(
     problemStatusOptions[0],
@@ -669,23 +462,10 @@ export default function ProblemsPage() {
   );
   const deferredSearch = React.useDeferredValue(searchTerm);
 
-  React.useEffect(() => {
-    const nextGroup = topicLanding?.group || "All Topics";
-    setActiveGroup(nextGroup);
-    setTopicFilter(nextGroup);
-  }, [topicLanding]);
-
-  React.useEffect(() => {
-    if (!topicLanding) return;
-    trackTopicEngagement(topicLanding.group, "landing_view", {
-      landing_slug: topicSlug,
-    });
-  }, [topicLanding, topicSlug]);
-
   const { snapshot, recordAttempt, setProblemSolved, monthMatrix } =
     useLearningProgress({
       user,
-      topics: coreTopics,
+      topics: coalTopicsList,
       problems: problemsCatalog,
     });
 
@@ -696,13 +476,13 @@ export default function ProblemsPage() {
   const xp = solvedCount * 100 + attemptedCount * 30;
   const { level, rankName, nextLevelXp } = React.useMemo(() => {
     if (xp >= 1500) {
-      return { level: 4, rankName: "Karnaugh Commander", nextLevelXp: 3000 };
+      return { level: 4, rankName: "Assembly Wizard", nextLevelXp: 3000 };
     } else if (xp >= 800) {
-      return { level: 3, rankName: "Silicon Architect", nextLevelXp: 1500 };
+      return { level: 3, rankName: "Kernel Engineer", nextLevelXp: 1500 };
     } else if (xp >= 300) {
-      return { level: 2, rankName: "Logic Gatekeeper", nextLevelXp: 800 };
+      return { level: 2, rankName: "Microcode Hacker", nextLevelXp: 800 };
     }
-    return { level: 1, rankName: "Logic Cadet", nextLevelXp: 300 };
+    return { level: 1, rankName: "Registers Recruit", nextLevelXp: 300 };
   }, [xp]);
 
   const xpPercentage = Math.min(100, Math.round((xp / nextLevelXp) * 100));
@@ -725,19 +505,19 @@ export default function ProblemsPage() {
     }
   };
 
-  // DLD Fact of the Day
+  // COAL Fact of the Day
   const dailyFact = React.useMemo(() => {
-    const dldFacts = [
-      "NAND and NOR gates are called universal gates because they can construct any other logic gate.",
-      "Karnaugh Maps (K-Maps) were invented in 1953 by Maurice Karnaugh, a telecommunications engineer at Bell Labs.",
-      "A multiplexer (MUX) is also known as a data selector because it chooses one of many inputs to pass to a single output.",
-      "A flip-flop can store 1 bit of data and is the building block of sequential logic circuits and registers.",
-      "De Morgan's Laws state that the complement of a union is the intersection of the complements, and vice versa.",
-      "Gray code is a binary numeral system where two successive values differ in only one bit, preventing transient errors in sensors.",
-      "In a synchronous sequential logic circuit, all state transitions are synchronized by a global clock signal.",
+    const coalFacts = [
+      "Von Neumann architecture stores both instructions and data in the same memory space, leading to the 'Von Neumann bottleneck'.",
+      "Real-mode x86 uses segmented memory addressing (segment * 16 + offset) to access up to 1 MB of physical memory.",
+      "The Interrupt Vector Table (IVT) resides at physical address 0x00000000 in real mode, containing 256 vector addresses.",
+      "In Little Endian architectures (like Intel x86), the least significant byte is stored at the lowest memory address.",
+      "RISC processors use simple instruction formats, fixed-length instructions, and a Load-Store model to execute in single cycles.",
+      "A RAW (Read After Write) hazard occurs when an instruction depends on the output of a prior instruction that is still in flight.",
+      "The CPU stack grows downward in memory, meaning that PUSH operations decrement the Stack Pointer (ESP)."
     ];
     const dayIndex = new Date().getDay();
-    return dldFacts[dayIndex % dldFacts.length];
+    return coalFacts[dayIndex % coalFacts.length];
   }, []);
 
   // Solved problems count in the last 7 days (Weekly Goal tracker)
@@ -762,35 +542,35 @@ export default function ProblemsPage() {
   const cheatSheetFormula = React.useMemo(() => {
     const formulas = [
       {
-        name: "De Morgan's Theorem",
-        formula: "(A · B)' = A' + B'",
-        description: "Negated product equals sum of negations.",
+        name: "Signed Integer Ranges",
+        formula: "[-2^(N-1), 2^(N-1) - 1]",
+        description: "Limits of 2's complement representation for N bits.",
       },
       {
-        name: "De Morgan's Theorem 2",
-        formula: "(A + B)' = A' · B'",
-        description: "Negated sum equals product of negations.",
+        name: "Physical Address Offset",
+        formula: "Address = Segment * 16 + Offset",
+        description: "Used by real mode segment registers to form 20-bit addresses.",
       },
       {
-        name: "Absorption Law",
-        formula: "A + A · B = A",
-        description: "The term A absorbs A · B.",
+        name: "Direct Mapped Cache Index",
+        formula: "Index = (Block Address) mod (Number of Blocks)",
+        description: "Maps a main memory block address to a direct cache index.",
       },
       {
-        name: "Consensus Theorem",
-        formula: "A·B + A'·C + B·C = A·B + A'·C",
-        description: "B·C is redundant and can be removed.",
+        name: "Interrupt Vector Address",
+        formula: "Vector Address = Interrupt Number * 4",
+        description: "Locates the segment:offset entry in real mode's IVT.",
       },
       {
-        name: "Distributive Law",
-        formula: "A + (B · C) = (A + B) · (A + C)",
-        description: "OR distributes over AND.",
+        name: "Stack Pointer Movement",
+        formula: "ESP = ESP - 4 (on PUSH) or ESP = ESP + 4 (on POP)",
+        description: "Tracks ESP changes on 32-bit x86 stack actions.",
       },
       {
-        name: "Shannon's Expansion",
-        formula: "F(A, B) = A · F(1, B) + A' · F(0, B)",
-        description: "Used to expand boolean functions.",
-      },
+        name: "Signed Overflow Flag",
+        formula: "OF = CarryIn(MSB) ⊕ CarryOut(MSB)",
+        description: "Sets when signed arithmetic results overflow the bit width.",
+      }
     ];
     const day = new Date().getDate();
     return formulas[day % formulas.length];
@@ -872,7 +652,7 @@ export default function ProblemsPage() {
     [filteredProblems, selectedProblemId],
   );
 
-  const topTopicProgress = coreTopics
+  const topTopicProgress = coalTopicsList
     .map((topic) => ({
       topic,
       progress: snapshot?.state?.topics?.[topic.id],
@@ -886,11 +666,6 @@ export default function ProblemsPage() {
 
   const handleRecordAttempt = React.useCallback(
     (problem) => {
-      trackPracticeEngagement("record_attempt", {
-        problem_id: problem.id,
-        problem_title: problem.title,
-        problem_topic: problem.topic,
-      });
       recordAttempt(problem);
     },
     [recordAttempt],
@@ -898,18 +673,13 @@ export default function ProblemsPage() {
 
   const handleSetProblemSolved = React.useCallback(
     (problem, solved) => {
-      trackPracticeEngagement(solved ? "mark_solved" : "mark_unsolved", {
-        problem_id: problem.id,
-        problem_title: problem.title,
-        problem_topic: problem.topic,
-      });
       setProblemSolved(problem, solved);
     },
     [setProblemSolved],
   );
 
   return (
-    <div className={`problems-page theme-${theme}`}>
+    <div className={`problems-page coal-track theme-${theme}`}>
       <div className="problems-backdrop problems-backdrop-left" />
       <div className="problems-backdrop problems-backdrop-right" />
 
@@ -938,11 +708,10 @@ export default function ProblemsPage() {
           className={`problems-sidebar ${isMobileSidebarOpen ? "is-open" : ""}`}
         >
           <div className="problems-sidebar-brand">
-            <span className="problems-sidebar-badge">Practice Arena</span>
-            <h1>{topicLanding?.title || "Problems"}</h1>
+            <span className="problems-sidebar-badge">COAL Practice</span>
+            <h1>COAL Challenges</h1>
             <p>
-              {topicLanding?.description ||
-                "LeetCode-style digital logic practice with activity, progress, and topic depth."}
+              Academic-level computer organization and x86-32 assembly trace questions. Submit solutions to test logic.
             </p>
           </div>
 
@@ -950,7 +719,7 @@ export default function ProblemsPage() {
             className="problems-sidebar-nav"
             aria-label="Problems navigation"
           >
-            {/* ── Practice Arenas: always visible, with inline tab panels ── */}
+            {/* Practice Arenas */}
             <div className="sidebar-nav-section">
               <h4 className="sidebar-section-title">Practice Arenas</h4>
               <div className="sidebar-section-items">
@@ -961,7 +730,6 @@ export default function ProblemsPage() {
 
                   return (
                     <div key={item.label} className="arena-item-wrapper">
-                      {/* The main arena button — same original style */}
                       <button
                         type="button"
                         className={`problems-sidebar-link ${isActive ? "is-active" : ""} ${isPanelOpen ? "panel-open" : ""}`}
@@ -992,7 +760,7 @@ export default function ProblemsPage() {
                         </span>
                       </button>
 
-                      {/* Inline sub-panel — slides open on click */}
+                      {/* Sub Panel */}
                       <div className={`arena-sub-panel ${isPanelOpen ? "is-open" : ""}`}>
                         <div className="arena-sub-panel-inner">
                           <p className="arena-sub-desc">
@@ -1010,10 +778,8 @@ export default function ProblemsPage() {
                                   if (link.action === "navigate") {
                                     navigate(link.value);
                                   } else if (link.action === "filter") {
-                                    navigate("/problems");
                                     setDifficulty(link.value);
                                   } else if (link.action === "topic") {
-                                    navigate("/problems");
                                     setActiveGroup(link.value);
                                     setTopicFilter(link.value);
                                   }
@@ -1032,7 +798,7 @@ export default function ProblemsPage() {
               </div>
             </div>
 
-            {/* ── All other sections as accordion tabs ── */}
+            {/* Accordion sections */}
             <div className="sidebar-accordion">
               {leftNavSections.slice(1).map((section) => (
                 <SidebarAccordion
@@ -1046,27 +812,27 @@ export default function ProblemsPage() {
           </nav>
 
           <section className="problems-sidebar-foot">
-            <h3 className="sidebar-foot-title">Progress Stats</h3>
+            <h3 className="sidebar-foot-title">COAL Progress</h3>
             <div className="sidebar-stat-item solved">
               <div className="stat-label-wrap">
                 <Trophy size={16} className="stat-icon" />
                 <span>Solved</span>
               </div>
-              <strong>{snapshot.summary.solvedProblems}</strong>
+              <strong>{solvedCount}</strong>
             </div>
             <div className="sidebar-stat-item attempted">
               <div className="stat-label-wrap">
                 <Compass size={16} className="stat-icon" />
                 <span>Attempted</span>
               </div>
-              <strong>{snapshot.summary.attemptedProblems}</strong>
+              <strong>{attemptedCount}</strong>
             </div>
             <div className="sidebar-stat-item streak">
               <div className="stat-label-wrap">
                 <Flame size={16} className="stat-icon" />
                 <span>Streak</span>
               </div>
-              <strong>{snapshot.summary.streaks.current} d</strong>
+              <strong>{snapshot?.summary?.streaks?.current ?? 0} d</strong>
             </div>
           </section>
         </aside>
@@ -1088,12 +854,6 @@ export default function ProblemsPage() {
                   tabIndex={0}
                   aria-label={`${card.title} — ${card.eyebrow}`}
                   onClick={() => handleBannerCardClick(card)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleBannerCardClick(card);
-                    }
-                  }}
                 >
                   <span>{card.eyebrow}</span>
                   <h2>{card.title}</h2>
@@ -1103,7 +863,7 @@ export default function ProblemsPage() {
             </div>
           </div>
 
-          {/* ── Inline Daily Challenge Banner ── */}
+          {/* Daily Challenge Banner */}
           {dailyProblem && (
             <div className="inline-daily-challenge">
               <div className="inline-daily-left">
@@ -1148,9 +908,6 @@ export default function ProblemsPage() {
                 onClick={() => {
                   setActiveGroup(group);
                   setTopicFilter(group);
-                  trackPracticeEngagement("topic_filter_click", {
-                    filter_group: group,
-                  });
                 }}
               >
                 {group}
@@ -1158,80 +915,14 @@ export default function ProblemsPage() {
             ))}
           </div>
 
-          {topicLanding ? (
-            <section
-              className="problems-widget arena-landing-widget"
-              aria-labelledby="topic-cluster-links"
-            >
-              <div className="arena-landing-header">
-                <div className="arena-landing-meta">
-                  <span className="problems-widget-label">Practice Arena</span>
-                  <h2 id="topic-cluster-links" className="arena-landing-title">
-                    {topicLanding.title}
-                  </h2>
-                  <p className="arena-landing-desc">{topicLanding.description}</p>
-                </div>
-                <div className="arena-landing-stats">
-                  <div className="arena-stat-pill">
-                    <strong>{filteredProblems.length}</strong>
-                    <span>Problems</span>
-                  </div>
-                  <div className="arena-stat-pill">
-                    <strong>
-                      {filteredProblems.filter(
-                        (p) => snapshot?.state?.problems?.[p.id]?.status === "solved"
-                      ).length}
-                    </strong>
-                    <span>Solved</span>
-                  </div>
-                  <div className="arena-stat-pill">
-                    <strong>
-                      {filteredProblems.filter((p) => p.difficulty === "Easy").length}
-                    </strong>
-                    <span>Easy</span>
-                  </div>
-                  <div className="arena-stat-pill">
-                    <strong>
-                      {filteredProblems.filter((p) => p.difficulty === "Medium").length}
-                    </strong>
-                    <span>Medium</span>
-                  </div>
-                  <div className="arena-stat-pill">
-                    <strong>
-                      {filteredProblems.filter((p) => p.difficulty === "Hard").length}
-                    </strong>
-                    <span>Hard</span>
-                  </div>
-                </div>
-              </div>
-              <div className="arena-landing-links-row">
-                <span className="arena-links-label">Related tutorials →</span>
-                <div className="selected-problem-tags">
-                  {topicLanding.links.map((link) => (
-                    <Link key={link.to} to={link.to} className="arena-tutorial-link">
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </section>
-          ) : null}
-
           <section className="problems-toolbar">
             <label className="problems-search">
               <Search size={18} />
               <input
                 type="search"
-                placeholder="Search problems, tags, circuits, latches..."
+                placeholder="Search registers, stacks, cache tags..."
                 value={searchTerm}
-                onChange={(event) => {
-                  setSearchTerm(event.target.value);
-                  if (event.target.value.length > 2) {
-                    trackPracticeEngagement("search_query", {
-                      query_length: event.target.value.length,
-                    });
-                  }
-                }}
+                onChange={(event) => setSearchTerm(event.target.value)}
               />
             </label>
 
@@ -1285,17 +976,17 @@ export default function ProblemsPage() {
           <section className="problems-table-card">
             <div className="problems-table-summary">
               <div>
-                <span className="table-summary-label">Problem Library</span>
+                <span className="table-summary-label">COAL Problem Library</span>
                 <strong>{filteredProblems.length} visible challenges</strong>
               </div>
               <div className="table-summary-stats">
                 <span>
                   <Flame size={15} />
-                  {snapshot.summary.streaks.current} day streak
+                  {snapshot?.summary?.streaks?.current ?? 0} day streak
                 </span>
                 <span>
                   <Sparkles size={15} />
-                  {snapshot.summary.completionRate}% completion
+                  {snapshot?.summary?.completionRate ?? 0}% completion
                 </span>
               </div>
             </div>
@@ -1315,11 +1006,10 @@ export default function ProblemsPage() {
                 </thead>
                 <tbody>
                   {filteredProblems.map((problem) => {
-                    const progress = snapshot.state.problems[problem.id] || {};
+                    const progress = snapshot?.state?.problems?.[problem.id] || {};
                     const solved = progress.status === "solved";
                     const attempted = progress.status === "attempted";
                     const isSelected = selectedProblemId === problem.id;
-
                     const isLocked = Boolean(problem.premium);
 
                     return (
@@ -1330,13 +1020,6 @@ export default function ProblemsPage() {
                           if (isLocked) return;
                           setSelectedProblemId(problem.id);
                           setActiveProblem(problem);
-                          trackPracticeEngagement("open_problem", {
-                            problem_id: problem.id,
-                            problem_title: problem.title,
-                            problem_topic: problem.topic,
-                          });
-                          // Opening a problem for the first time marks it "attempted".
-                          // It will later be upgraded to "solved" via onSolved from the modal.
                           if (!solved && !attempted) {
                             handleRecordAttempt(problem);
                           }
@@ -1501,6 +1184,7 @@ export default function ProblemsPage() {
             </div>
           </div>
 
+          {/* Snapshot widget */}
           <div className="problems-widget stats-widget">
             <div className="problems-widget-head">
               <div>
@@ -1513,11 +1197,11 @@ export default function ProblemsPage() {
 
             <div className="stats-grid">
               <div>
-                <strong>{snapshot?.summary?.solvedProblems ?? 0}</strong>
+                <strong>{solvedCount}</strong>
                 <span>Solved</span>
               </div>
               <div>
-                <strong>{snapshot?.summary?.attemptedProblems ?? 0}</strong>
+                <strong>{attemptedCount}</strong>
                 <span>Attempted</span>
               </div>
               <div>
@@ -1544,10 +1228,10 @@ export default function ProblemsPage() {
                 ? snapshot?.state?.problems?.[selectedProblem.id]
                 : null
             }
-            onAttempt={handleRecordAttempt}
-            onToggleSolved={handleSetProblemSolved}
+            onSolveClick={(problem) => setActiveProblem(problem)}
           />
 
+          {/* Top learning paths */}
           <section className="problems-widget">
             <div className="problems-widget-head">
               <div>
@@ -1578,6 +1262,7 @@ export default function ProblemsPage() {
             </div>
           </section>
 
+          {/* Recent Activity */}
           <section className="problems-widget">
             <div className="problems-widget-head">
               <div>
@@ -1587,10 +1272,10 @@ export default function ProblemsPage() {
             </div>
 
             <div className="recent-activity-list">
-               {(snapshot?.recentEvents || []).length ? (
+              {(snapshot?.recentEvents || []).length ? (
                 snapshot.recentEvents.slice(0, 5).map((event) => {
                   const topic = event.topicId
-                    ? topicLookup[event.topicId]
+                    ? coalTopicLookup[event.topicId]
                     : null;
                   return (
                     <div key={event.id} className="recent-activity-item">
@@ -1616,7 +1301,7 @@ export default function ProblemsPage() {
             </div>
           </section>
 
-          {/* DLD Fact of the Day */}
+          {/* COAL Fact of the Day */}
           <div className="problems-widget fact-widget">
             <div className="fact-head">
               <Info size={15} />
@@ -1628,10 +1313,11 @@ export default function ProblemsPage() {
       </main>
 
       {activeProblem && (
-        <ProblemModal
+        <CoalProblemModal
           problem={activeProblem}
           onClose={() => setActiveProblem(null)}
           onSolved={(problem) => handleSetProblemSolved(problem, true)}
+          onAttempt={(problem) => handleRecordAttempt(problem)}
         />
       )}
     </div>

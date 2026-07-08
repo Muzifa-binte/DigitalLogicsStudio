@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import { Navbar } from "../Home/Navbar";
 import Footer from "../Home/Footer";
 import { useTheme } from "../../context/ThemeContext";
@@ -36,56 +37,35 @@ function validateForm(mode, values) {
   return "";
 }
 
-/* ── Eye icon SVGs ─────────────────────────────────────────────────────────── */
-function EyeOpen() {
+/* ── Text input with a leading icon ───────────────────────────────────────── */
+function TextField({ icon: Icon, label, name, type = "text", value, onChange, autoComplete, placeholder }) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
+    <label className="auth-field">
+      <span>{label}</span>
+      <div className="auth-input-wrapper">
+        <Icon className="auth-input-icon" size={18} aria-hidden="true" />
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          autoComplete={autoComplete}
+          placeholder={placeholder}
+        />
+      </div>
+    </label>
   );
 }
 
-function EyeOff() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  );
-}
-
-/* ── Password input with toggle ────────────────────────────────────────────── */
+/* ── Password input with leading icon + visibility toggle ────────────────── */
 function PasswordField({ name, value, onChange, autoComplete, placeholder, label }) {
   const [visible, setVisible] = React.useState(false);
 
   return (
     <label className="auth-field">
       <span>{label}</span>
-      <div className="auth-password-wrapper">
+      <div className="auth-input-wrapper auth-password-wrapper">
+        <Lock className="auth-input-icon" size={18} aria-hidden="true" />
         <input
           type={visible ? "text" : "password"}
           name={name}
@@ -100,7 +80,7 @@ function PasswordField({ name, value, onChange, autoComplete, placeholder, label
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? "Hide password" : "Show password"}
         >
-          {visible ? <EyeOff /> : <EyeOpen />}
+          {visible ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
         </button>
       </div>
     </label>
@@ -219,30 +199,27 @@ export default function AuthPage({ mode }) {
 
             <form className="auth-form" onSubmit={handleSubmit} noValidate>
               {isSignup && (
-                <label className="auth-field">
-                  <span>Full Name</span>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formValues.name}
-                    onChange={handleChange}
-                    autoComplete="name"
-                    placeholder="Muhammad Saad"
-                  />
-                </label>
+                <TextField
+                  icon={User}
+                  label="Full Name"
+                  name="name"
+                  value={formValues.name}
+                  onChange={handleChange}
+                  autoComplete="name"
+                  placeholder="Muhammad Saad"
+                />
               )}
 
-              <label className="auth-field">
-                <span>Email Address</span>
-                <input
-                  type="email"
-                  name="email"
-                  value={formValues.email}
-                  onChange={handleChange}
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                />
-              </label>
+              <TextField
+                icon={Mail}
+                label="Email Address"
+                name="email"
+                type="email"
+                value={formValues.email}
+                onChange={handleChange}
+                autoComplete="email"
+                placeholder="you@example.com"
+              />
 
               <PasswordField
                 label="Password"
@@ -270,13 +247,21 @@ export default function AuthPage({ mode }) {
                 />
               )}
 
-              {formError ? <p className="auth-error">{formError}</p> : null}
+              {formError ? (
+                <p className="auth-error">
+                  <AlertCircle size={18} aria-hidden="true" />
+                  <span>{formError}</span>
+                </p>
+              ) : null}
 
               <button
                 type="submit"
                 className="auth-submit"
                 disabled={isSubmitting || isLoading}
               >
+                {isSubmitting && (
+                  <Loader2 className="auth-spinner" size={18} aria-hidden="true" />
+                )}
                 {isSubmitting
                   ? isSignup
                     ? "Creating account..."

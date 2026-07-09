@@ -160,7 +160,7 @@ function TopicCard({ topic, progress, onOpenTopic, onToggleSubtopic }) {
 }
 
 // topics must always be passed as a prop from Home.jsx — no internal fallback
-export default function CoreTopicsSection({ topics }) {
+export default function CoreTopicsSection({ topics, parentTopicId = null }) {
   const { user } = useAuth();
   const { snapshot, openTopic, toggleSubtopicCompleted } = useLearningProgress({
     user,
@@ -169,6 +169,33 @@ export default function CoreTopicsSection({ topics }) {
   });
 
   if (!topics || topics.length === 0) return null;
+
+  // When parentTopicId is supplied (e.g. "coal-theory"), the individual topic IDs
+  // in the cards won't have their own progress entries. Instead, derive per-card
+  // progress from the parent topic's completedSubtopics list.
+  const parentProgress = parentTopicId
+    ? snapshot.state.topics?.[parentTopicId]
+    : null;
+
+  function getProgress(topic) {
+    if (!parentProgress) return snapshot.state.topics[topic.id];
+
+    // The parent topic stores completed subtopic slugs. A card's links[].id are
+    // the slugs that belong to this card. Calculate completion from that subset.
+    const cardSlugs = topic.links.map((l) => l.id);
+    const completedSlugs = parentProgress.completedSubtopics || [];
+    const completedInCard = cardSlugs.filter((slug) => completedSlugs.includes(slug));
+    const total = cardSlugs.length;
+    const done = completedInCard.length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    return {
+      completionPercentage: pct,
+      completedCount: done,
+      totalSubtopics: total,
+      completedSubtopics: completedSlugs,
+      status: pct >= 100 ? "completed" : pct > 0 ? "in_progress" : "not_started",
+    };
+  }
 
   return (
     <section className="core-topics-section">
@@ -193,7 +220,7 @@ export default function CoreTopicsSection({ topics }) {
             <span>Total paths</span>
           </div>
           <div>
-            <strong>{snapshot.summary.streaks.current}</strong>
+            <strong>{snapshot.summary.streaks?.current ?? 0}</strong>
             <span>Active-day streak</span>
           </div>
         </div>
@@ -204,7 +231,7 @@ export default function CoreTopicsSection({ topics }) {
           <TopicCard
             key={topic.id}
             topic={topic}
-            progress={snapshot.state.topics[topic.id]}
+            progress={getProgress(topic)}
             onOpenTopic={openTopic}
             onToggleSubtopic={toggleSubtopicCompleted}
           />

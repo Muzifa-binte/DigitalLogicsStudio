@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Home } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
@@ -84,6 +84,7 @@ const PremiumLearningShell = ({
   sidebarPages,
   overviewPath = "",
   isSidebarItemActive = null,
+  isSidebarItemDone = null,
   topicLabel,
   sidebarTitle,
   sidebarCopy,
@@ -142,6 +143,21 @@ const PremiumLearningShell = ({
     getCompletedSubtopics(),
   );
 
+  // Hydrate the in-memory progress cache from MongoDB the first time a
+  // tracked topic page is visited. Without this, navigating directly to
+  // e.g. /boolean/laws would always show "Mark as Read" as unchecked
+  // because the cache starts empty.
+  const dbLoadedRef = useRef(null);
+  useEffect(() => {
+    if (!trackedTopic || !user || userKey === "guest") return;
+    if (dbLoadedRef.current === userKey) return;
+    dbLoadedRef.current = userKey;
+
+    progressService.loadFromDB(userKey).then(() => {
+      setCompletedSubtopics(getCompletedSubtopics());
+    });
+  }, [user, userKey, trackedTopic, getCompletedSubtopics]);
+
   useEffect(() => {
     setSidebarOpen(false);
   }, [currentPath]);
@@ -196,6 +212,8 @@ const PremiumLearningShell = ({
   const isRead = subtopicId ? completedSubtopics.includes(subtopicId) : false;
 
   const pageDone = (pageIndex, page) => {
+    if (isSidebarItemDone) return isSidebarItemDone(page, completedSubtopics);
+
     if (!trackedTopic) return pageIndex < safeIndex;
 
     const pageSubtopicId = pathToSubtopicId[page.path];

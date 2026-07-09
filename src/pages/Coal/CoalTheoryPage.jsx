@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import CoalLayout from "./CoalLayout";import CoreTopicsSection from "../../components/topics/CoreTopicsSection";
+import CoalLayout from "./CoalLayout";
+import CoreTopicsSection from "../../components/topics/CoreTopicsSection";
 import { buildCoalCoreTopics } from "../../data/coalCoreTopics";
 import { coalCourseMeta, coalCourseParts } from "../../data/coalCourseOutline";
 import { getAllCoalModules } from "../../utils/coalCourseUtils";
@@ -44,7 +45,7 @@ function CoalTheoryPage() {
           </span>
         </div>
 
-        <CoreTopicsSection topics={coalTopics} />
+        <CoreTopicsSection topics={coalTopics} parentTopicId="coal-theory" />
       </div>
     </CoalLayout>
   );

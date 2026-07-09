@@ -485,11 +485,7 @@ const AppContent = () => {
             element={<MemoryConstructionRAM />}
           />
 
-          {/* ── Misc ──────────────────────────────────────────── */}
-          <Route path="/trainer-board" element={<DLDTrainerBoard />} />
-          <Route path="*" element={<NotFoundPage />} />
-
-          {/* Coal routes */}
+          {/* ── COAL Practical Labs ───────────────────────────── */}
           <Route
             path="/resources/coal/practical/instruction-trace-lab"
             element={<InstructionTraceLabPage />}
@@ -502,11 +498,14 @@ const AppContent = () => {
             path="/resources/coal/practical/addressing-mode-playground"
             element={<AddressingModePlaygroundPage />}
           />
-
           <Route
             path="/resources/coal/practical/instruction-laboratory"
             element={<InstructionLaboratoryPage />}
           />
+
+          {/* ── Misc ──────────────────────────────────────────── */}
+          <Route path="/trainer-board" element={<DLDTrainerBoard />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </>

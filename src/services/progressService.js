@@ -17,6 +17,7 @@ const guestKey = "guest";
 // ─── In-memory cache (per user key) ──────────────────────────────────────────
 
 const cache = {}; // cache[userKey] = { problems, topics, activity, recentEvents }
+const loadPromises = {}; // deduplicate concurrent loadFromDB calls per userKey
 
 const defaultState = () => ({
   problems: {},
@@ -255,20 +256,32 @@ const progressService = {
    */
   loadFromDB: async (userKey) => {
     if (isStaticRender() || userKey === guestKey) return;
-    try {
-      const { data } = await apiClient.get("/progress/snapshot");
-      if (data?.success && data.state) {
-        cache[userKey] = {
-          problems: data.state.problems || {},
-          topics: data.state.topics || {},
-          activity: data.state.activity || {},
-          recentEvents: data.state.recentEvents || [],
-        };
+    // Return the in-flight promise if one already exists for this user so
+    // concurrent callers (PremiumLearningShell + useLearningProgress) don't
+    // fire duplicate API requests.
+    if (loadPromises[userKey]) return loadPromises[userKey];
+
+    loadPromises[userKey] = (async () => {
+      try {
+        const { data } = await apiClient.get("/progress/snapshot");
+        if (data?.success && data.state) {
+          cache[userKey] = {
+            problems: data.state.problems || {},
+            topics: data.state.topics || {},
+            activity: data.state.activity || {},
+            recentEvents: data.state.recentEvents || [],
+          };
+        }
+      } catch {
+        // Could not reach backend – start with empty cache
+        cache[userKey] = defaultState();
+      } finally {
+        // Clear the promise so a later explicit refresh can re-fetch
+        delete loadPromises[userKey];
       }
-    } catch {
-      // Could not reach backend – start with empty cache
-      cache[userKey] = defaultState();
-    }
+    })();
+
+    return loadPromises[userKey];
   },
 
   /**

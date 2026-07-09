@@ -124,13 +124,32 @@ function isCoalPartSidebarActive(page, location) {
   const { pathname, hash } = location;
 
   if (pathname === COAL_THEORY_OVERVIEW_PATH) {
+    // On the overview page, only activate a part if there's a matching hash.
+    // When there's no hash, don't highlight anything — avoids Part 1 always
+    // appearing active when the user hasn't scrolled to / selected a part yet.
+    if (!hash) return false;
     const targetHash = `#coal-part-${page.partId}`;
-    if (hash) return hash === targetHash;
-    return page.partNumber === 1;
+    return hash === targetHash;
   }
 
   const activePart = getCoalPartForPath(pathname);
   return activePart?.id === page.partId;
+}
+
+/**
+ * Returns true when every module in the sidebar part has been completed.
+ * Passed as `isSidebarItemDone` to PremiumLearningShell so the sidebar
+ * part-level items show the ✓ checkmark only after all their topics are read.
+ *
+ * @param {object} page           - sidebar page object (has .partId)
+ * @param {string[]} completedSubtopics - IDs already marked as read
+ */
+function isCoalPartSidebarDone(page, completedSubtopics) {
+  const part = coalCourseParts.find((p) => p.id === page.partId);
+  if (!part) return false;
+  return part.modules.every((module) =>
+    completedSubtopics.includes(module.slug),
+  );
 }
 
 export {
@@ -145,5 +164,6 @@ export {
   getCoalPartForPath,
   getCoalTopicPath,
   isCoalPartSidebarActive,
+  isCoalPartSidebarDone,
   coalCourseParts,
 };

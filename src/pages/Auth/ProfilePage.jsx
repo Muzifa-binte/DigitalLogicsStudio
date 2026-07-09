@@ -885,7 +885,7 @@ export default function ProfilePage() {
                   value={attemptedCount}
                   sub={
                     solvedCount > 0
-                      ? `${Math.round((solvedCount / attemptedCount) * 100)}% solve rate`
+                      ? `${Math.round((solvedCount / Math.max(attemptedCount, 1)) * 100)}% solve rate`
                       : "no attempts yet"
                   }
                   accent={COLORS.blue}

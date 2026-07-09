@@ -6,6 +6,7 @@ import {
   COAL_PATH_TO_SUBTOPIC_ID,
   COAL_THEORY_OVERVIEW_PATH,
   isCoalPartSidebarActive,
+  isCoalPartSidebarDone,
 } from "../../utils/coalCourseUtils";
 import "./CoalLayout.css";
 
@@ -35,6 +36,7 @@ function CoalLayout({
       sidebarPages={coalPartSidebarPages}
       overviewPath={COAL_THEORY_OVERVIEW_PATH}
       isSidebarItemActive={isCoalPartSidebarActive}
+      isSidebarItemDone={isCoalPartSidebarDone}
       topicLabel="COAL Theory"
       sidebarTitle="Course parts"
       sidebarCopy="Jump to a part on the theory path. Open individual topics from the dots above or the cards below."

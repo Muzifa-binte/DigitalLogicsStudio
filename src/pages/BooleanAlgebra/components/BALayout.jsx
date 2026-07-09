@@ -29,6 +29,7 @@ const BALayout = ({ title, subtitle, intro, highlights = [], children }) => (
     intro={intro}
     highlights={highlights}
     pages={baPages}
+    overviewPath="/boolean/overview"
     topicLabel="Boolean Algebra"
     sidebarTitle="Boolean Algebra"
     sidebarCopy="Master the mathematical foundation of every digital circuit with one polished lesson flow."

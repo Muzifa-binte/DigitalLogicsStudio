@@ -138,6 +138,10 @@ export default function AuthPage({ mode }) {
 
         // FIX 3: register/login return the full API response object { success, message, user }.
         // The user is nested under data.user, not at the top level.
+        if (!data?.user) {
+          throw new Error("Account was created but the server did not return your profile.");
+        }
+
         navigate(redirectTo, {
           replace: true,
           state: {
@@ -154,6 +158,12 @@ export default function AuthPage({ mode }) {
         );
 
         // FIX 3: Same as above — user is at data.user, not data directly.
+        if (!data?.user) {
+          throw new Error(
+            "Login succeeded but your session could not be established. Please try again.",
+          );
+        }
+
         navigate(redirectTo, {
           replace: true,
           state: { authMessage: `Welcome back, ${data.user.name}.` },

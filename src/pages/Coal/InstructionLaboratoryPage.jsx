@@ -43,6 +43,110 @@ const INSTRUCTION_DATABASE = [
         commonMistakes: "INC cannot be used directly on immediate values (e.g., INC 5 is invalid). Forgetting memory size pointer (e.g., INC [BX]) will fail to compile."
     },
     {
+        id: "mov",
+        instruction: "MOV",
+        category: "Data Transfer",
+        function: "Move / Copy Data",
+        difficulty: "Beginner",
+        syntax: "MOV destination, source",
+        description: "Copies the data from the source operand into the destination operand. The source value remains unchanged.",
+        operands: "Register, Memory, Immediate",
+        affectedFlags: "None",
+        examples: "MOV AX, BX ; Copy BX into AX\nMOV CX, 0x0F ; Load immediate hex value into CX",
+        commonMistakes: "Cannot move data directly from memory to memory (e.g., MOV [BX], [SI] is invalid). CS and IP registers cannot be targeted directly."
+    },
+    {
+        id: "cmp",
+        instruction: "CMP",
+        category: "Arithmetic",
+        function: "Compare Operands",
+        difficulty: "Beginner",
+        syntax: "CMP destination, source",
+        description: "Compares destination and source by subtracting source from destination. It modifies status flags but does NOT store the arithmetic result.",
+        operands: "Register, Memory, Immediate",
+        affectedFlags: "ZF, SF, CF, OF, AF, PF",
+        examples: "CMP AX, BX ; Modifies flags based on AX - BX\nCMP CX, 0  ; Checks if CX is zero",
+        commonMistakes: "Often confused with SUB; remember that CMP leaves the original value of the destination completely untouched."
+    },
+    {
+        id: "push",
+        instruction: "PUSH",
+        category: "Data Transfer",
+        function: "Push Word onto Stack",
+        difficulty: "Intermediate",
+        syntax: "PUSH source",
+        description: "Decrements the Stack Pointer (SP) by 2 (in 16-bit) and copies the source operand onto the top of the stack.",
+        operands: "Register, Memory, Immediate",
+        affectedFlags: "None",
+        examples: "PUSH AX ; Push contents of AX to stack\nPUSH 10 ; Push immediate value onto stack",
+        commonMistakes: "Cannot push an 8-bit register alone (e.g., PUSH AL is invalid). Stack operations must match word size."
+    },
+    {
+        id: "pop",
+        instruction: "POP",
+        category: "Data Transfer",
+        function: "Pop Word from Stack",
+        difficulty: "Intermediate",
+        syntax: "POP destination",
+        description: "Copies the word from the top of the stack into the destination operand, then increments the Stack Pointer (SP) by 2.",
+        operands: "Register, Memory",
+        affectedFlags: "None",
+        examples: "POP AX ; Restore AX from top of stack\nPOP [BX] ; Pop top of stack into memory pointer",
+        commonMistakes: "Cannot pop into an immediate value or the CS (Code Segment) register directly."
+    },
+    {
+        id: "and",
+        instruction: "AND",
+        category: "Logical / Shift",
+        function: "Bitwise AND",
+        difficulty: "Beginner",
+        syntax: "AND destination, source",
+        description: "Performs a bitwise logical AND operation between destination and source, storing the output in the destination.",
+        operands: "Register, Memory, Immediate",
+        affectedFlags: "ZF, SF, PF (CF and OF are cleared to 0)",
+        examples: "AND AX, 0x0F ; Clear upper nibble of AX\nAND BX, CX   ; Bitwise AND of BX and CX",
+        commonMistakes: "Clears CF and OF automatically, which might break pending conditional jumps depending on carry states."
+    },
+    {
+        id: "or",
+        instruction: "OR",
+        category: "Logical / Shift",
+        function: "Bitwise Inclusive OR",
+        difficulty: "Beginner",
+        syntax: "OR destination, source",
+        description: "Performs a bitwise logical inclusive OR operation between destination and source, storing the result in the destination.",
+        operands: "Register, Memory, Immediate",
+        affectedFlags: "ZF, SF, PF (CF and OF are cleared to 0)",
+        examples: "OR AX, 1 ; Set the lowest bit of AX\nOR BX, CX ; Bitwise OR of BX and CX",
+        commonMistakes: "Like AND, it resets CF and OF back to 0, which can interfere with condition testing loops if not anticipated."
+    },
+    {
+        id: "xor",
+        instruction: "XOR",
+        category: "Logical / Shift",
+        function: "Bitwise Exclusive OR",
+        difficulty: "Beginner",
+        syntax: "XOR destination, source",
+        description: "Performs a bitwise logical exclusive OR operation between destination and source. Identical bits result in 0, differing bits result in 1.",
+        operands: "Register, Memory, Immediate",
+        affectedFlags: "ZF, SF, PF (CF and OF are cleared to 0)",
+        examples: "XOR AX, AX ; Clears AX efficiently to 0\nXOR BX, 0xFFFF ; Inverts all bits of BX",
+        commonMistakes: "Using XOR AX, AX is a great optimization trick, but don't forget it alters the Zero Flag (ZF) to 1, unlike a MOV AX, 0 instruction."
+    },
+    {
+        id: "not",
+        instruction: "NOT",
+        category: "Logical / Shift",
+        function: "Bitwise One's Complement",
+        difficulty: "Beginner",
+        syntax: "NOT destination",
+        description: "Inverts all bits of the destination operand (0s become 1s, and 1s become 0s).",
+        operands: "Register, Memory",
+        affectedFlags: "None",
+        examples: "NOT AX ; Invert all bits inside AX\nNOT BYTE PTR [BX] ; Complement memory byte values",
+        commonMistakes: "Unlike NEG (Two's Complement), the NOT instruction has absolutely no effect on any CPU flags."
+    },
+    {
         id: "shl",
         instruction: "SHL",
         category: "Logical / Shift",
@@ -93,6 +197,19 @@ const INSTRUCTION_DATABASE = [
         affectedFlags: "None",
         examples: "CALL MY_FUNC ; Direct call to subroutine\nCALL SI ; Indirect call through pointer register",
         commonMistakes: "Forgetting to put a 'RET' instruction at the end of the called procedure will cause the processor to continue executing subsequent memory sequential code, corrupting the execution flow."
+    },
+    {
+        id: "ret",
+        instruction: "RET",
+        category: "Control Transfer",
+        function: "Return from Procedure",
+        difficulty: "Advanced",
+        syntax: "RET",
+        description: "Pops the return address from the top of the stack back into the Instruction Pointer (IP), resuming execution directly after the corresponding CALL instruction.",
+        operands: "None (or optional immediate byte pop count)",
+        affectedFlags: "None",
+        examples: "RET ; Simple pop IP return\nRET 4 ; Pop return address and clean up 4 bytes of parameters from stack",
+        commonMistakes: "If stack values pushed during the subroutine aren't popped out beforehand, RET will pull junk data into the Instruction Pointer, crashing execution."
     }
 ];
 
@@ -130,6 +247,8 @@ function InstructionLaboratoryPage() {
     const [showDemo, setShowDemo] = useState(false);
     const [regAX, setRegAX] = useState("10");
     const [regBX, setRegBX] = useState("5");
+    const [regCX, setRegCX] = useState("0"); // 👈 Add this
+    const [regDX, setRegDX] = useState("0"); // 👈 Add this
     const [simOutput, setSimOutput] = useState(null);
 
     // NEW STATE: Tracks active tab inside the comparison panel
@@ -149,6 +268,10 @@ function InstructionLaboratoryPage() {
         let finalAX = valAX;
         let finalBX = valBX;
         let explanation = "";
+        
+        // Flags update behavior tracking variables
+        let modifyFlags = true; 
+        let forceCFZero = false;
 
         if (selectedInstruction.id === "sub") {
             finalAX = valAX - valBX;
@@ -159,33 +282,79 @@ function InstructionLaboratoryPage() {
         } else if (selectedInstruction.id === "inc") {
             finalAX = valAX + 1;
             explanation = `Executed: INC AX. Added 1 to destination contents: ${valAX} + 1 = ${finalAX}.`;
+            // Note: INC changes ZF and SF, but physically NEVER affects the Carry Flag (CF) in x86 hardware.
+        } else if (selectedInstruction.id === "mov") {
+            finalAX = valBX; // BX ki value AX me copy ho gayi
+            explanation = `Executed: MOV AX, BX. Copied the value of BX (${valBX}) into AX. Register BX remains unchanged, and data transfer does not alter any flags.`;
+            modifyFlags = false; // MOV flags ko change nahi karta
+        } else if (selectedInstruction.id === "cmp") {
+            const cmpResult = valAX - valBX; // Calculation temporary hoti hai
+            explanation = `Executed: CMP AX, BX. Subtracted BX (${valBX}) from AX (${valAX}) internally. Flags updated based on result (${cmpResult}), but AX value remains untouched as ${valAX}.`;
+            // Flags update honge based on subtraction result, temporary value update karenge parameters ke liye
+            finalAX = cmpResult; 
+        } else if (selectedInstruction.id === "push") {
+            explanation = `Executed: PUSH AX. Decremented the Stack Pointer (SP) by 2 and pushed the value of AX (${valAX}) onto the top of the stack storage.`;
+            modifyFlags = false; // Stack push leaves flags unaffected
+        } else if (selectedInstruction.id === "pop") {
+            finalAX = 42; // Stack se generic mock value pop karwa di
+            explanation = `Executed: POP AX. Pulled the top value from the Stack Frame (simulated as 42) into AX, then incremented the Stack Pointer (SP) by 2.`;
+            modifyFlags = false; 
+        } else if (selectedInstruction.id === "and") {
+            finalAX = valAX & valBX;
+            explanation = `Executed: AND AX, BX. Performed bitwise logical AND. Only bits that are 1 in both registers remain 1. New value is ${finalAX}.`;
+            forceCFZero = true; // Logical operations always clear CF and OF
+        } else if (selectedInstruction.id === "or") {
+            finalAX = valAX | valBX;
+            explanation = `Executed: OR AX, BX. Performed bitwise inclusive OR. Bits are set to 1 if they are 1 in either register. New value is ${finalAX}.`;
+            forceCFZero = true;
+        } else if (selectedInstruction.id === "xor") {
+            finalAX = valAX ^ valBX;
+            explanation = `Executed: XOR AX, BX. Performed bitwise exclusive OR. Identical bits cancel out to 0; differing bits set to 1. New value is ${finalAX}.`;
+            forceCFZero = true;
+        } else if (selectedInstruction.id === "not") {
+            finalAX = ~valAX;
+            explanation = `Executed: NOT AX. Performed bitwise inversion (One's Complement) on AX. All 0s flipped to 1s and vice versa. Result is ${finalAX}.`;
+            modifyFlags = false; // NOT instruction does not modify any flags
         } else if (selectedInstruction.id === "shl") {
             finalAX = valAX << 1;
             explanation = `Executed: SHL AX, 1. Shifted register bits left by 1 position (equivalent to multiplying ${valAX} by 2). New value is ${finalAX}.`;
+        } else if (selectedInstruction.id === "sal") {
+            finalAX = valAX << 1;
+            explanation = `Executed: SAL AX, 1. Shifted register bits left arithmetically. Performs the exact same binary operation as SHL, resulting in ${finalAX}.`;
+        } else if (selectedInstruction.id === "jmp") {
+            explanation = `Executed: JMP MY_LOOP. The Instruction Pointer (IP) was updated to 'MY_LOOP'. Registers AX (${valAX}) and BX (${valBX}) remain unchanged.`;
+            modifyFlags = false;
+        } else if (selectedInstruction.id === "call") {
+            explanation = `Executed: CALL MY_FUNC. Pushed return sequential address onto the Stack, then updated IP to 'MY_FUNC'. Registers are untouched.`;
+            modifyFlags = false;
+        } else if (selectedInstruction.id === "ret") {
+            explanation = `Executed: RET. Popped the return address from the top of the stack back into the Instruction Pointer (IP), resuming workflow.`;
+            modifyFlags = false;
         }
 
-        else if (selectedInstruction.id === "sal") {
-            finalAX = valAX << 1; // Exactly identical to SHL
-            explanation = `Executed: SAL AX, 1. Shifted register bits left arithmetically. As Assembly Uncle designed, it performs the exact same binary operation as SHL, resulting in ${finalAX}.`;
+        // Flags logic block calculation
+        let flags;
+        if (!modifyFlags) {
+            // Agar instruction flags change nahi karti (jaise MOV, NOT, PUSH, POP, JMP, CALL, RET)
+            flags = {
+                ZF: "0 (Unchanged)",
+                SF: "0 (Unchanged)",
+                CF: "0 (Unchanged)"
+            };
+        } else {
+            flags = {
+                ZF: finalAX === 0 ? "1 (Active)" : "0 (Clear)",
+                SF: finalAX < 0 ? "1 (Negative)" : "0 (Positive)",
+                CF: forceCFZero 
+                    ? "0 (Cleared)" 
+                    : (selectedInstruction.id === "inc" ? "0 (Unaffected)" : (finalAX < 0 || finalAX > 255 ? "1 (Triggered)" : "0 (Normal)"))
+            };
         }
 
-        else if (selectedInstruction.id === "jmp") {
-            // JMP overwrites the execution path completely, simulating jumping to a label
-            explanation = `Executed: JMP MY_LOOP. The Instruction Pointer (IP) was immediately updated to the memory address of 'MY_LOOP'. Registers AX (${valAX}) and BX (${valBX}) remain unchanged because no arithmetic was performed.`;
-        }
+        // CMP ke case mein graphical UI pe AX ki real value revert karne ke liye check
+        const displayAX = selectedInstruction.id === "cmp" ? valAX : finalAX;
 
-        else if (selectedInstruction.id === "call") {
-            // CALL pushes the return address to the stack pointer before changing IP
-            explanation = `Executed: CALL MY_FUNC. The processor pushed the next sequential memory address onto the Stack Frame [SP], then updated the Instruction Pointer (IP) to point to 'MY_FUNC'. Registers AX (${valAX}) and BX (${valBX}) are untouched.`;
-        }
-
-        const flags = {
-            ZF: finalAX === 0 ? "1 (Active)" : "0 (Clear)",
-            SF: finalAX < 0 ? "1 (Negative)" : "0 (Positive)",
-            CF: finalAX < 0 || finalAX > 255 ? "1 (Triggered)" : "0 (Normal)"
-        };
-
-        setSimOutput({ finalAX, finalBX, flags, explanation });
+        setSimOutput({ finalAX: displayAX, finalBX, flags, explanation });
     };
 
     const currentCompare = COMPARISON_DATA[activeCompareTab];
@@ -251,6 +420,7 @@ function InstructionLaboratoryPage() {
                             >
                                 <option value="All">All Categories</option>
                                 <option value="Arithmetic">Arithmetic</option>
+                                <option value="Data Transfer">Data Transfer</option>
                                 <option value="Logical / Shift">Logical / Shift</option>
                                 <option value="Control Transfer">Control Transfer</option> 
                             </select>

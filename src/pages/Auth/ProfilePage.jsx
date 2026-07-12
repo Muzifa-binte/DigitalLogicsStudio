@@ -5,8 +5,6 @@ import {
   Line,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
   Cell,
   XAxis,
   YAxis,
@@ -62,16 +60,7 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString();
 }
 
-function getDayName(dateStr) {
-  return new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" });
-}
 
-function getWeekLabel(dateStr) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, sub, accent, trend }) {
@@ -2547,8 +2536,6 @@ export default function ProfilePage() {
 
           const SIGNAL_TOPICS = activeSubject === "COAL" ? COAL_SIGNAL_TOPICS : DLD_SIGNAL_TOPICS;
 
-          const activeSolveCount  = activeSubject === "COAL" ? coalSolvedCount    : dldSolvedCount;
-          const activeAttemptAmt  = activeSubject === "COAL" ? coalAttemptedCount : dldAttemptedCount;
           const activeAccuracy    = activeSubject === "COAL"
             ? (coalPartsCompleted > 0 ? Math.round((coalPartsCompleted / coalPartsTotal) * 100) : 0)
             : (dldSolvedCount > 0 ? Math.round((dldSolvedCount / Math.max(dldAttemptedCount, 1)) * 100) : 0);
